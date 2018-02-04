@@ -27,9 +27,8 @@ class Player(Tile):
         tile_right_x = tile_left_x + Tile.DIMS[0]
         tile_top_y = tile.position[1]
         tile_bot_y = tile_top_y + Tile.DIMS[1]
-        if player_left_x <= tile_right_x and \
-                player_right_x >= tile_left_x and \
-                player_top_y <= tile_bot_y and player_bot_y >= tile_top_y:
+        if player_left_x < tile_right_x and player_right_x > tile_left_x and \
+                player_top_y < tile_bot_y and player_bot_y > tile_top_y:
             return True
         return False
 
