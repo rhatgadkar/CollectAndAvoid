@@ -15,6 +15,7 @@ class Player(Tile):
         self.world = world
         self.dead = False
         self.got_food = False
+        self.score = 0
 
     def _bounding_box(self, tile):
         if tile == None:
@@ -58,6 +59,7 @@ class Player(Tile):
                 if isinstance(tile, Wall):
                     self.dead = True
                 elif isinstance(tile, Food) and not self.got_food:
+                    self.score += 1
                     self.got_food = True
                     self.world.grid[tile_row][tile_col] = None
                     bot_row = self.world.num_total_rows - 1

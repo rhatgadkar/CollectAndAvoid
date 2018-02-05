@@ -4,12 +4,12 @@ from food import Food
 from random import randint
 
 class World:
-    SCREEN_DIMS = (400, 400)
+    WORLD_DIMS = (400, 400)
 
     def __init__(self):
         self.grid = []
-        self.num_total_rows = World.SCREEN_DIMS[1] / Tile.DIMS[1]
-        self.num_total_cols = World.SCREEN_DIMS[0] / Tile.DIMS[0]
+        self.num_total_rows = World.WORLD_DIMS[1] / Tile.DIMS[1]
+        self.num_total_cols = World.WORLD_DIMS[0] / Tile.DIMS[0]
         for row in range(self.num_total_rows):
             col_list = [None] * self.num_total_cols
             self.grid.append(col_list)

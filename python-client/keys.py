@@ -31,3 +31,10 @@ class Keys:
         Keys.down = False
         Keys.right = True
         Keys.left = False
+
+    @staticmethod
+    def reset():
+	Keys.up = True
+	Keys.down = False
+	Keys.right = False
+	Keys.left = False

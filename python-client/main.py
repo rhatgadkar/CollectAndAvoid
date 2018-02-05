@@ -8,43 +8,72 @@ from keys import Keys
 
 FPS = 60
 BLACK = (0 ,0, 0)
+WHITE = (255, 255, 255)
+TILE_Y_OFFSET = 50
+SCREEN_DIMS = (World.WORLD_DIMS[0], World.WORLD_DIMS[1] + TILE_Y_OFFSET)
 
-screen = pygame.display.set_mode(World.SCREEN_DIMS)
+screen = pygame.display.set_mode(SCREEN_DIMS)
+pygame.font.init()
+myfont = pygame.font.SysFont('Comic Sans MS', 16)
 clock = pygame.time.Clock()
-world = World()
-player = Player(world)
+world = None
+player = None
+game_started = False
+text_surface = myfont.render("Press 'Enter' to start game.", False, WHITE)
 
-while 1:
+while True:
     # user input
     clock.tick(FPS)
     for event in pygame.event.get():
         if event.type == pygame.locals.KEYDOWN:
-            if event.key == pygame.locals.K_RIGHT:
-                Keys.set_right()
-            elif event.key == pygame.locals.K_LEFT:
-                Keys.set_left()
-            elif event.key == pygame.locals.K_UP:
-                Keys.set_up()
-            elif event.key == pygame.locals.K_DOWN:
-                Keys.set_down()
-            elif event.key == pygame.locals.K_ESCAPE:
-                exit(0)
+            if not game_started:
+                if event.key == pygame.locals.K_RETURN:
+                    game_started = True
+                    world = World()
+                    player = Player(world)
+                    Keys.reset()
+                    player.dead = False
+                elif event.key == pygame.locals.K_ESCAPE:
+                    exit(0)
+            elif game_started:
+                if event.key == pygame.locals.K_RIGHT:
+                    Keys.set_right()
+                elif event.key == pygame.locals.K_LEFT:
+                    Keys.set_left()
+                elif event.key == pygame.locals.K_UP:
+                    Keys.set_up()
+                elif event.key == pygame.locals.K_DOWN:
+                    Keys.set_down()
+                elif event.key == pygame.locals.K_ESCAPE:
+                    exit(0)
 
     # simulation
-    player.do_something()
-    if player.dead:
-        print 'player dead'
-        exit(0)
+    if game_started:
+        player.do_something()
+        if player.dead:
+            game_started = False
+            text_surface = myfont.render(
+                "Game over. Press 'Enter' to start new game.", False, WHITE)
 
     # rendering
     screen.fill(BLACK)
-    for row in range(world.num_total_rows):
-        for col in range(world.num_total_cols):
-            t = world.grid[row][col]
-            if t == None:
-                continue
-            t_rect = pygame.Rect(t.position, Tile.DIMS)
-            pygame.draw.rect(screen, t.color, t_rect)
-    player_rect = pygame.Rect(player.position, Tile.DIMS)
-    pygame.draw.rect(screen, player.color, player_rect)
+    if game_started:
+        for row in range(world.num_total_rows):
+            for col in range(world.num_total_cols):
+                t = world.grid[row][col]
+                if t == None:
+                    continue
+                t_draw_position = (t.position[0],
+                                   t.position[1] + TILE_Y_OFFSET)
+                t_rect = pygame.Rect(t_draw_position, Tile.DIMS)
+                pygame.draw.rect(screen, t.color, t_rect)
+        player_draw_position = (player.position[0],
+                                player.position[1] + TILE_Y_OFFSET)
+        player_rect = pygame.Rect(player_draw_position, Tile.DIMS)
+        pygame.draw.rect(screen, player.color, player_rect)
+        score_surface = myfont.render('Score: %s' % str(player.score), False,
+                                      WHITE)
+        screen.blit(score_surface, (0, 0))
+    else:
+        screen.blit(text_surface, (50, 50))
     pygame.display.flip()
