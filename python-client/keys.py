@@ -34,7 +34,7 @@ class Keys:
 
     @staticmethod
     def reset():
-	Keys.up = True
-	Keys.down = False
-	Keys.right = False
-	Keys.left = False
+        Keys.up = True
+        Keys.down = False
+        Keys.right = False
+        Keys.left = False

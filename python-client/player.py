@@ -8,9 +8,13 @@ from random import randint
 class Player(Tile):
     VERT_SPEED = 2
     HORIZ_SPEED = 2
+    STARTING_COL = 5
+    STARTING_ROW = 15
+    STARTING_X = STARTING_COL * Tile.DIMS[0]
+    STARTING_Y = STARTING_ROW * Tile.DIMS[1]
 
     def __init__(self, world):
-        self.position = (100, 300)
+        self.position = (Player.STARTING_X, Player.STARTING_Y)
         self.color = (0, 255, 0)
         self.world = world
         self.dead = False
@@ -18,6 +22,7 @@ class Player(Tile):
         self.score = 0
 
     def _bounding_box(self, tile):
+        ''' Return true if collision between specified tile and player '''
         if tile == None:
             return False
         player_left_x = self.position[0]
@@ -34,6 +39,7 @@ class Player(Tile):
         return False
 
     def _check_collision(self):
+        ''' Check for collisions between player and other tiles '''
         player_col = self.position[0] / Tile.DIMS[0]
         player_row = self.position[1] / Tile.DIMS[1]
         surrounding_row_cols = [(player_row, player_col),
@@ -50,8 +56,8 @@ class Player(Tile):
             tile_row = tile_row_col[0]
             tile_col = tile_row_col[1]
             if tile_row < 0 or tile_col < 0 or \
-                    tile_row >= self.world.num_total_rows or \
-                    tile_col >= self.world.num_total_cols:
+                    tile_row >= World.TOTAL_ROWS or \
+                    tile_col >= World.TOTAL_COLS:
                 continue
             tile = self.world.grid[tile_row][tile_col]
             if self._bounding_box(tile):
@@ -62,18 +68,16 @@ class Player(Tile):
                     self.score += 1
                     self.got_food = True
                     self.world.grid[tile_row][tile_col] = None
-                    bot_row = self.world.num_total_rows - 1
-                    right_col = self.world.num_total_cols - 1
                     while True:
-                        new_wall_row = randint(0, bot_row)
-                        new_wall_col = randint(0, right_col)
+                        new_wall_row = randint(0, World.BOT_ROW)
+                        new_wall_col = randint(0, World.RIGHT_COL)
                         if self.world.grid[new_wall_row][new_wall_col] == None:
                             self.world.grid[new_wall_row][new_wall_col] = \
                                 Wall(new_wall_row, new_wall_col)
                             break
                     while True:
-                        new_food_row = randint(0, bot_row)
-                        new_food_col = randint(0, right_col)
+                        new_food_row = randint(0, World.BOT_ROW)
+                        new_food_col = randint(0, World.RIGHT_COL)
                         if self.world.grid[new_food_row][new_food_col] == None:
                             self.world.grid[new_food_row][new_food_col] = \
                                 Food(new_food_row, new_food_col)
@@ -82,7 +86,6 @@ class Player(Tile):
             self.got_food = False
 
     def do_something(self):
-        self._check_collision()
         x, y = self.position
         if Keys.up:
             y -= Player.VERT_SPEED
@@ -93,3 +96,4 @@ class Player(Tile):
         if Keys.right:
             x += Player.HORIZ_SPEED
         self.position = (x, y)
+        self._check_collision()

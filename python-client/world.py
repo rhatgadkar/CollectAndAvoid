@@ -1,17 +1,22 @@
 from tile import Tile
 from wall import Wall
 from food import Food
-from random import randint
 
 class World:
     WORLD_DIMS = (400, 400)
+    TOTAL_ROWS = WORLD_DIMS[1] / Tile.DIMS[1]
+    TOTAL_COLS = WORLD_DIMS[0] / Tile.DIMS[0]
+    BOT_ROW = TOTAL_ROWS - 1
+    RIGHT_COL = TOTAL_COLS - 1
 
-    def __init__(self):
+    def __init__(self, food_row, food_col):
+        if food_row <= 0 or food_row >= World.TOTAL_ROWS - 1:
+            raise RuntimeError('Invalid food_row')
+        if food_col <= 0 or food_col >= World.TOTAL_COLS - 1:
+            raise RuntimeError('Invalid food_col')
         self.grid = []
-        self.num_total_rows = World.WORLD_DIMS[1] / Tile.DIMS[1]
-        self.num_total_cols = World.WORLD_DIMS[0] / Tile.DIMS[0]
-        for row in range(self.num_total_rows):
-            col_list = [None] * self.num_total_cols
+        for row in range(World.TOTAL_ROWS):
+            col_list = [None] * World.TOTAL_COLS
             self.grid.append(col_list)
         '''
         Map:
@@ -37,20 +42,16 @@ class World:
         wwwwwwwwwwwwwwwwwwww
         '''
         # initialize top row
-        right_col = self.num_total_cols - 1
-        bot_row = self.num_total_rows - 1
-        for col in range(self.num_total_cols):
+        for col in range(World.TOTAL_COLS):
             self.grid[0][col] = Wall(0, col)
         # initialize bot row
-        for col in range(self.num_total_cols):
-            self.grid[bot_row][col] = Wall(right_col, col)
+        for col in range(World.TOTAL_COLS):
+            self.grid[World.BOT_ROW][col] = Wall(World.RIGHT_COL, col)
         # initialize left col
-        for row in range(1, bot_row):
+        for row in range(1, World.BOT_ROW):
             self.grid[row][0] = Wall(row, 0)
         # initialize right col
-        for row in range(1, bot_row):
-            self.grid[row][right_col] = Wall(row, right_col)
-        # put food in random row, col
-        food_row = randint(1, self.num_total_rows - 2)
-        food_col = randint(1, self.num_total_cols - 2)
+        for row in range(1, World.BOT_ROW):
+            self.grid[row][World.RIGHT_COL] = Wall(row, World.RIGHT_COL)
+        # put food in specified row, col
         self.grid[food_row][food_col] = Food(food_row, food_col)

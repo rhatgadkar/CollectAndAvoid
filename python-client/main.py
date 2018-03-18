@@ -5,6 +5,7 @@ from player import Player
 from tile import Tile
 from world import World
 from keys import Keys
+from random import randint
 
 FPS = 60
 BLACK = (0 ,0, 0)
@@ -29,13 +30,20 @@ while True:
             if not game_started:
                 if event.key == pygame.locals.K_RETURN:
                     game_started = True
-                    world = World()
+                    while True:
+                        food_row = randint(1, World.TOTAL_ROWS - 2)
+                        food_col = randint(1, World.TOTAL_COLS - 2)
+                        if food_row == Player.STARTING_ROW and \
+                                food_col == Player.STARTING_COL:
+                            continue
+                        break
+                    world = World(food_row, food_col)
                     player = Player(world)
                     Keys.reset()
                     player.dead = False
                 elif event.key == pygame.locals.K_ESCAPE:
                     exit(0)
-            elif game_started:
+            else:
                 if event.key == pygame.locals.K_RIGHT:
                     Keys.set_right()
                 elif event.key == pygame.locals.K_LEFT:
@@ -58,8 +66,8 @@ while True:
     # rendering
     screen.fill(BLACK)
     if game_started:
-        for row in range(world.num_total_rows):
-            for col in range(world.num_total_cols):
+        for row in range(World.TOTAL_ROWS):
+            for col in range(World.TOTAL_COLS):
                 t = world.grid[row][col]
                 if t == None:
                     continue
