@@ -77,7 +77,7 @@ while True:
                 pygame.draw.rect(screen, t.color, t_rect)
         player_draw_position = (player.position[0],
                                 player.position[1] + TILE_Y_OFFSET)
-        player_rect = pygame.Rect(player_draw_position, Tile.DIMS)
+        player_rect = pygame.Rect(player_draw_position, Player.DIMS)
         pygame.draw.rect(screen, player.color, player_rect)
         score_surface = myfont.render('Score: %s' % str(player.score), False,
                                       WHITE)

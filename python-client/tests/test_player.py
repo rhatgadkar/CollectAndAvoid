@@ -200,7 +200,7 @@ class TestPlayer(unittest.TestCase):
         player = Player(world)
         player_row = 9
         player_col = 10
-        player_y = Tile.DIMS[1] * player_row
+        player_y = Tile.DIMS[1] * (player_row + 1) - Player.DIMS[1]
         player_x = Tile.DIMS[0] * player_col
         player.position = (player_x, player_y)
         Keys.set_down()
@@ -255,7 +255,7 @@ class TestPlayer(unittest.TestCase):
         player_row = 10
         player_col = 9
         player_y = Tile.DIMS[1] * player_row
-        player_x = Tile.DIMS[0] * player_col
+        player_x = Tile.DIMS[0] * (player_col + 1) - Player.DIMS[0]
         player.position = (player_x, player_y)
         Keys.set_right()
 
