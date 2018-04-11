@@ -1,12 +1,8 @@
-from tile import Tile
+from stationary_tile import StationaryTile
 
-class Food(Tile):
+class Food(StationaryTile):
     def __init__(self, row, col):
-        self.row = row
-        self.col = col
-        x = col * Tile.DIMS[0]
-        y = row * Tile.DIMS[1]
-        self.position = (x, y)
+        StationaryTile.__init__(self, row, col)
         self.color = (0, 255, 255)
 
     def do_something(self):

@@ -2,7 +2,8 @@ from sys import exit
 import pygame
 import pygame.locals
 from player import Player
-from tile import Tile
+from stationary_tile import StationaryTile
+from moving_tile import MovingTile
 from world import World
 from keys import Keys
 from random import randint
@@ -73,11 +74,11 @@ while True:
                     continue
                 t_draw_position = (t.position[0],
                                    t.position[1] + TILE_Y_OFFSET)
-                t_rect = pygame.Rect(t_draw_position, Tile.DIMS)
+                t_rect = pygame.Rect(t_draw_position, StationaryTile.DIMS)
                 pygame.draw.rect(screen, t.color, t_rect)
         player_draw_position = (player.position[0],
                                 player.position[1] + TILE_Y_OFFSET)
-        player_rect = pygame.Rect(player_draw_position, Player.DIMS)
+        player_rect = pygame.Rect(player_draw_position, MovingTile.DIMS)
         pygame.draw.rect(screen, player.color, player_rect)
         score_surface = myfont.render('Score: %s' % str(player.score), False,
                                       WHITE)

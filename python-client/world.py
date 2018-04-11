@@ -1,11 +1,11 @@
-from tile import Tile
+from stationary_tile import StationaryTile
 from wall import Wall
 from food import Food
 
 class World:
     WORLD_DIMS = (400, 400)
-    TOTAL_ROWS = WORLD_DIMS[1] / Tile.DIMS[1]
-    TOTAL_COLS = WORLD_DIMS[0] / Tile.DIMS[0]
+    TOTAL_ROWS = WORLD_DIMS[1] / StationaryTile.DIMS[1]
+    TOTAL_COLS = WORLD_DIMS[0] / StationaryTile.DIMS[0]
     BOT_ROW = TOTAL_ROWS - 1
     RIGHT_COL = TOTAL_COLS - 1
 
