@@ -13,16 +13,14 @@ class Player(MovingTile):
     STARTING_Y = STARTING_ROW * StationaryTile.DIMS[1]
 
     def __init__(self, world):
-        MovingTile.__init__(self, world)
+        super(self.__class__, self).__init__(world)
         self.position = (Player.STARTING_X, Player.STARTING_Y)
         self.color = (0, 255, 0)
         self.dead = False
         self.score = 0
 
-    def is_dead(self):
-        return self.dead
-
     def do_something(self):
+        #import pdb; pdb.set_trace()
         x, y = self.position
         if Keys.up:
             y -= Player.VERT_SPEED
@@ -37,8 +35,7 @@ class Player(MovingTile):
         if collided_tile:
             if isinstance(collided_tile, Wall):
                 self.dead = True
-            elif isinstance(collided_tile, Food) and not \
-                    MovingTile.get_got_food(self):
+            elif isinstance(collided_tile, Food) and not self.got_food:
                 self.score += 1
                 self.got_food = True
                 self.world.grid[collided_tile.row][collided_tile.col] = None
@@ -65,4 +62,4 @@ class Player(MovingTile):
                     self.world.grid[new_food_row][new_food_col] = new_food
                     break
         else:
-            MovingTile.set_got_food(self, False)
+            self.got_food = False

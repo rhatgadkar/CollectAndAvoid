@@ -47,16 +47,16 @@ class TestPlayer(unittest.TestCase):
 
         new_x = player.position[0]
         new_y = player.position[1] - MovingTile.VERT_SPEED
-        new_dead = player.is_dead()
-        new_got_food = player.get_got_food()
+        new_dead = player.dead
+        new_got_food = player.got_food
         new_score = player.score
 
         player.do_something()
 
         self.assertEqual(new_x, player.position[0])
         self.assertEqual(new_y, player.position[1])
-        self.assertEqual(new_dead, player.is_dead())
-        self.assertEqual(new_got_food, player.get_got_food())
+        self.assertEqual(new_dead, player.dead)
+        self.assertEqual(new_got_food, player.got_food)
         self.assertEqual(new_score, player.score)
 
     def test_collide_from_bot(self):
@@ -100,7 +100,7 @@ class TestPlayer(unittest.TestCase):
 
         new_x = player.position[0]
         new_y = player.position[1] - MovingTile.VERT_SPEED
-        new_dead = player.is_dead()
+        new_dead = player.dead
         new_got_food = True
         new_score = player.score + 1
 
@@ -108,8 +108,8 @@ class TestPlayer(unittest.TestCase):
 
         self.assertEqual(new_x, player.position[0])
         self.assertEqual(new_y, player.position[1])
-        self.assertEqual(new_dead, player.is_dead())
-        self.assertEqual(new_got_food, player.get_got_food())
+        self.assertEqual(new_dead, player.dead)
+        self.assertEqual(new_got_food, player.got_food)
         self.assertEqual(new_score, player.score)
 
     def test_collide_from_right(self):
@@ -155,15 +155,15 @@ class TestPlayer(unittest.TestCase):
         new_x = player.position[0] - MovingTile.HORIZ_SPEED
         new_y = player.position[1]
         new_dead = True
-        new_got_food = player.get_got_food()
+        new_got_food = player.got_food
         new_score = player.score
 
         player.do_something()
 
         self.assertEqual(new_x, player.position[0])
         self.assertEqual(new_y, player.position[1])
-        self.assertEqual(new_dead, player.is_dead())
-        self.assertEqual(new_got_food, player.get_got_food())
+        self.assertEqual(new_dead, player.dead)
+        self.assertEqual(new_got_food, player.got_food)
         self.assertEqual(new_score, player.score)
 
     def test_collide_from_top(self):
@@ -210,15 +210,15 @@ class TestPlayer(unittest.TestCase):
         new_x = player.position[0]
         new_y = player.position[1] + MovingTile.VERT_SPEED
         new_dead = True
-        new_got_food = player.get_got_food()
+        new_got_food = player.got_food
         new_score = player.score
 
         player.do_something()
 
         self.assertEqual(new_x, player.position[0])
         self.assertEqual(new_y, player.position[1])
-        self.assertEqual(new_dead, player.is_dead())
-        self.assertEqual(new_got_food, player.get_got_food())
+        self.assertEqual(new_dead, player.dead)
+        self.assertEqual(new_got_food, player.got_food)
         self.assertEqual(new_score, player.score)
 
     def test_collide_from_left(self):
@@ -264,7 +264,7 @@ class TestPlayer(unittest.TestCase):
 
         new_x = player.position[0] + MovingTile.HORIZ_SPEED
         new_y = player.position[1]
-        new_dead = player.is_dead()
+        new_dead = player.dead
         new_got_food = True
         new_score = player.score + 1
 
@@ -272,8 +272,8 @@ class TestPlayer(unittest.TestCase):
 
         self.assertEqual(new_x, player.position[0])
         self.assertEqual(new_y, player.position[1])
-        self.assertEqual(new_dead, player.is_dead())
-        self.assertEqual(new_got_food, player.get_got_food())
+        self.assertEqual(new_dead, player.dead)
+        self.assertEqual(new_got_food, player.got_food)
         self.assertEqual(new_score, player.score)
 
     def test_during_food_collision(self):
@@ -296,16 +296,16 @@ class TestPlayer(unittest.TestCase):
 
         new_x = player.position[0]
         new_y = player.position[1] - MovingTile.VERT_SPEED
-        new_dead = player.is_dead()
-        new_got_food = player.get_got_food()
+        new_dead = player.dead
+        new_got_food = player.got_food
         new_score = player.score
 
         player.do_something()
 
         self.assertEqual(new_x, player.position[0])
         self.assertEqual(new_y, player.position[1])
-        self.assertEqual(new_dead, player.is_dead())
-        self.assertEqual(new_got_food, player.get_got_food())
+        self.assertEqual(new_dead, player.dead)
+        self.assertEqual(new_got_food, player.got_food)
         self.assertEqual(new_score, player.score)
 
     def test_after_food_collision(self):
@@ -328,7 +328,7 @@ class TestPlayer(unittest.TestCase):
 
         new_x = player.position[0]
         new_y = player.position[1] - MovingTile.VERT_SPEED
-        new_dead = player.is_dead()
+        new_dead = player.dead
         new_got_food = False
         new_score = player.score
 
@@ -336,8 +336,8 @@ class TestPlayer(unittest.TestCase):
 
         self.assertEqual(new_x, player.position[0])
         self.assertEqual(new_y, player.position[1])
-        self.assertEqual(new_dead, player.is_dead())
-        self.assertEqual(new_got_food, player.get_got_food())
+        self.assertEqual(new_dead, player.dead)
+        self.assertEqual(new_got_food, player.got_food)
         self.assertEqual(new_score, player.score)
 
 if __name__ == '__main__':

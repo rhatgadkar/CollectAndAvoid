@@ -11,12 +11,6 @@ class MovingTile(Tile):
         self.world = world
         self.got_food = False
 
-    def get_got_food(self):
-        return self.got_food
-
-    def set_got_food(self, value):
-        self.got_food = value
-
     def _bounding_box(self, tile):
         ''' Return true if collision between specified tile and moving_tile '''
         if tile == None:
@@ -26,9 +20,9 @@ class MovingTile(Tile):
         moving_tile_top_y = self.position[1]
         moving_tile_bot_y = moving_tile_top_y + MovingTile.DIMS[1]
         tile_left_x = tile.position[0]
-        tile_right_x = tile_left_x + MovingTile.DIMS[0]
+        tile_right_x = tile_left_x + StationaryTile.DIMS[0]
         tile_top_y = tile.position[1]
-        tile_bot_y = tile_top_y + MovingTile.DIMS[1]
+        tile_bot_y = tile_top_y + StationaryTile.DIMS[1]
         if moving_tile_left_x < tile_right_x and \
                 moving_tile_right_x > tile_left_x and \
                 moving_tile_top_y < tile_bot_y and \
@@ -58,5 +52,5 @@ class MovingTile(Tile):
                 continue
             tile = self.world.grid[tile_row][tile_col]
             if self._bounding_box(tile):
-                return tile, tile_row, tile_col
+                return tile
         return None

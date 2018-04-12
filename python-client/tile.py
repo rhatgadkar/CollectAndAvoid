@@ -1,4 +1,4 @@
-class Tile:
+class Tile(object):
     def __init__(self):
         self.position = (None, None)
         self.color = None
