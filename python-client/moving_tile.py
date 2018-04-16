@@ -14,27 +14,26 @@ class MovingTile(Tile):
         self.world = world
         self.got_food = False
 
-    def bounding_box(self, tile):
-        ''' Return true if collision between specified tile and moving_tile '''
-        if tile == None:
+    @staticmethod
+    def bounding_box(tile1, tile2):
+        ''' Return true if collision between 2 tiles '''
+        if not tile1 or not tile2:
             return False
-        moving_tile_left_x = self.position[0]
-        moving_tile_right_x = moving_tile_left_x + MovingTile.DIMS[0]
-        moving_tile_top_y = self.position[1]
-        moving_tile_bot_y = moving_tile_top_y + MovingTile.DIMS[1]
-        tile_left_x = tile.position[0]
-        tile_right_x = tile_left_x + StationaryTile.DIMS[0]
-        tile_top_y = tile.position[1]
-        tile_bot_y = tile_top_y + StationaryTile.DIMS[1]
-        if moving_tile_left_x < tile_right_x and \
-                moving_tile_right_x > tile_left_x and \
-                moving_tile_top_y < tile_bot_y and \
-                moving_tile_bot_y > tile_top_y:
+        tile1_left_x = tile1.position[0]
+        tile1_right_x = tile1_left_x + MovingTile.DIMS[0]
+        tile1_top_y = tile1.position[1]
+        tile1_bot_y = tile1_top_y + MovingTile.DIMS[1]
+        tile2_left_x = tile2.position[0]
+        tile2_right_x = tile2_left_x + StationaryTile.DIMS[0]
+        tile2_top_y = tile2.position[1]
+        tile2_bot_y = tile2_top_y + StationaryTile.DIMS[1]
+        if tile1_left_x < tile2_right_x and tile1_right_x > tile2_left_x and \
+                tile1_top_y < tile2_bot_y and tile1_bot_y > tile2_top_y:
             return True
         return False
 
     def check_collision(self):
-        ''' Return the tile that the moving_tile collided with '''
+        ''' Return the stationary tile that the moving_tile collided with '''
         moving_tile_col = self.position[0] / StationaryTile.DIMS[0]
         moving_tile_row = self.position[1] / StationaryTile.DIMS[1]
         surrounding_row_cols = [(moving_tile_row, moving_tile_col),
@@ -54,7 +53,7 @@ class MovingTile(Tile):
                     tile_col >= World.TOTAL_COLS:
                 continue
             tile = self.world.grid[tile_row][tile_col]
-            if self.bounding_box(tile):
+            if MovingTile.bounding_box(self, tile):
                 return tile
         return None
 
@@ -66,7 +65,9 @@ class MovingTile(Tile):
             new_wall = Wall(new_wall_row, new_wall_col)
             if self.world.grid[new_wall_row][new_wall_col] != None:
                 continue
-            if MovingTile.bounding_box(self, new_wall):
+            if MovingTile.bounding_box(self.world.player, new_wall):
+                continue
+            if MovingTile.bounding_box(self.world.enemy, new_wall):
                 continue
             self.world.grid[new_wall_row][new_wall_col] = new_wall
             break
@@ -79,7 +80,9 @@ class MovingTile(Tile):
             new_food = Food(new_food_row, new_food_col)
             if self.world.grid[new_food_row][new_food_col] != None:
                 continue
-            if self.bounding_box(new_food):
+            if MovingTile.bounding_box(self.world.player, new_food):
+                continue
+            if MovingTile.bounding_box(self.world.enemy, new_food):
                 continue
             self.world.grid[new_food_row][new_food_col] = new_food
             self.world.food = new_food

@@ -17,6 +17,7 @@ class Player(MovingTile):
         self.color = (0, 255, 0)
         self.dead = False
         self.score = 0
+        self.world.set_player(self)
 
     def do_something(self):
         x, y = self.position
@@ -29,6 +30,11 @@ class Player(MovingTile):
         if Keys.right:
             x += MovingTile.HORIZ_SPEED
         self.position = (x, y)
+        # check collision with enemy:
+        if MovingTile.bounding_box(self.world.player, self.world.enemy):
+            self.dead = True
+            return
+        # check collision with stationary tiles:
         collided_tile = MovingTile.check_collision(self)
         if collided_tile:
             if isinstance(collided_tile, Wall):

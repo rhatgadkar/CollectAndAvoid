@@ -17,6 +17,7 @@ class Enemy(MovingTile):
         self.color = (0, 0, 255)
         self.shortest_path = []
         self.food = self.world.food
+        self.world.set_enemy(self)
 
     def do_something(self):
         x, y = self.position

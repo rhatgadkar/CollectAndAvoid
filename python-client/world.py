@@ -10,6 +10,8 @@ class World:
     RIGHT_COL = TOTAL_COLS - 1
 
     def __init__(self, food_row, food_col):
+        self.player = None
+        self.enemy = None
         if food_row <= 0 or food_row >= World.TOTAL_ROWS - 1:
             raise RuntimeError('Invalid food_row')
         if food_col <= 0 or food_col >= World.TOTAL_COLS - 1:
@@ -56,3 +58,9 @@ class World:
         # put food in specified row, col
         self.food = Food(food_row, food_col)
         self.grid[food_row][food_col] = self.food
+
+    def set_player(self, player):
+        self.player = player
+    
+    def set_enemy(self, enemy):
+        self.enemy = enemy
