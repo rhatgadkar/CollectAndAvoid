@@ -2,6 +2,7 @@ from sys import exit
 import pygame
 import pygame.locals
 from player import Player
+from enemy import Enemy
 from stationary_tile import StationaryTile
 from moving_tile import MovingTile
 from world import World
@@ -20,6 +21,7 @@ myfont = pygame.font.SysFont('Comic Sans MS', 16)
 clock = pygame.time.Clock()
 world = None
 player = None
+enemy = None
 game_started = False
 text_surface = myfont.render("Press 'Enter' to start game.", False, WHITE)
 
@@ -37,9 +39,13 @@ while True:
                         if food_row == Player.STARTING_ROW and \
                                 food_col == Player.STARTING_COL:
                             continue
+                        if food_row == Enemy.STARTING_ROW and \
+                                food_col == Enemy.STARTING_COL:
+                            continue
                         break
                     world = World(food_row, food_col)
                     player = Player(world)
+                    enemy = Enemy(world)
                     Keys.reset()
                     player.dead = False
                 elif event.key == pygame.locals.K_ESCAPE:
@@ -58,6 +64,7 @@ while True:
 
     # simulation
     if game_started:
+        enemy.do_something()
         player.do_something()
         if player.dead:
             game_started = False
@@ -67,6 +74,7 @@ while True:
     # rendering
     screen.fill(BLACK)
     if game_started:
+        # draw stationary tiles:
         for row in range(World.TOTAL_ROWS):
             for col in range(World.TOTAL_COLS):
                 t = world.grid[row][col]
@@ -76,10 +84,16 @@ while True:
                                    t.position[1] + TILE_Y_OFFSET)
                 t_rect = pygame.Rect(t_draw_position, StationaryTile.DIMS)
                 pygame.draw.rect(screen, t.color, t_rect)
+        # draw player:
         player_draw_position = (player.position[0],
                                 player.position[1] + TILE_Y_OFFSET)
         player_rect = pygame.Rect(player_draw_position, MovingTile.DIMS)
         pygame.draw.rect(screen, player.color, player_rect)
+        # draw enemy:
+        enemy_draw_position = (enemy.position[0],
+                               enemy.position[1] + TILE_Y_OFFSET)
+        enemy_rect = pygame.Rect(enemy_draw_position, MovingTile.DIMS)
+        pygame.draw.rect(screen, enemy.color, enemy_rect)
         score_surface = myfont.render('Score: %s' % str(player.score), False,
                                       WHITE)
         screen.blit(score_surface, (0, 0))

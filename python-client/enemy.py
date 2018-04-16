@@ -17,6 +17,8 @@ class Enemy(MovingTile):
         self.color = (0, 0, 255)
         self.shortest_path = []
         self.food = self.world.food
+        self._set_shortest_path(Enemy.STARTING_ROW, Enemy.STARTING_COL,
+                                self.food.row, self.food.col)
         self.world.set_enemy(self)
 
     def do_something(self):
@@ -31,8 +33,8 @@ class Enemy(MovingTile):
         if not self.shortest_path:
             return
         next_tile = self.shortest_path[0]
-        next_tile_x = next_tile.position[0]
-        next_tile_y = next_tile.position[1]
+        next_tile_x = next_tile.col * StationaryTile.DIMS[1]
+        next_tile_y = next_tile.row * StationaryTile.DIMS[0]
         if x < next_tile_x:
             x += MovingTile.HORIZ_SPEED
         elif x > next_tile_x:
@@ -46,14 +48,11 @@ class Enemy(MovingTile):
         self.position = (x, y)
         collided_tile = MovingTile.check_collision(self)
         if collided_tile:
-            if isinstance(collided_tile, Food) and not self.got_food:
+            if isinstance(collided_tile, Food):
                 self.shortest_path = []
-                self.got_food = True
                 self.world.grid[collided_tile.row][collided_tile.col] = None
                 self.add_new_wall()
                 self.add_new_food()
-        else:
-            self.got_food = False
 
     class TilePath:
         def __init__(self, row, col, parent):
@@ -76,31 +75,46 @@ class Enemy(MovingTile):
         start_tile = Enemy.TilePath(src_row, src_col, None)
         undiscovered_tiles = [start_tile]
         discovered_tiles = []
+        for row in range(World.TOTAL_ROWS):
+            col_list = [None] * World.TOTAL_COLS
+            discovered_tiles.append(col_list)
         while undiscovered_tiles:
             curr_tile = undiscovered_tiles.pop(0)
-            discovered_tiles.append(curr_tile)
+            discovered_tiles[curr_tile.row][curr_tile.col] = curr_tile
             if curr_tile.row == dst_row and curr_tile.col == dst_col:
                 self.shortest_path = curr_tile.get_path()
                 return
             if curr_tile.row - 1 >= 0:
-                tile = Enemy.TilePath(curr_tile.row - 1, curr_tile.col,
-                                      curr_tile)
-                if tile not in discovered_tiles and not isinstance(tile, Wall):
-                    undiscovered_tiles.append(tile)
+                up_tile = self.world.grid[curr_tile.row - 1][curr_tile.col]
+                if not discovered_tiles[curr_tile.row - 1][curr_tile.col]:
+                    if (not up_tile) or (up_tile and not \
+                            isinstance(up_tile, Wall)):
+                        tile = Enemy.TilePath(curr_tile.row - 1, curr_tile.col,
+                                              curr_tile)
+                        undiscovered_tiles.append(tile)
             if curr_tile.row + 1 < World.TOTAL_ROWS:
-                tile = Enemy.TilePath(curr_tile.row + 1, curr_tile.col,
-                                      curr_tile)
-                if tile not in discovered_tiles and not isinstance(tile, Wall):
-                    undiscovered_tiles.append(tile)
+                down_tile = self.world.grid[curr_tile.row + 1][curr_tile.col]
+                if not discovered_tiles[curr_tile.row + 1][curr_tile.col]:
+                    if (not down_tile) or (down_tile and not \
+                            isinstance(down_tile, Wall)):
+                        tile = Enemy.TilePath(curr_tile.row + 1, curr_tile.col,
+                                              curr_tile)
+                        undiscovered_tiles.append(tile)
             if curr_tile.col - 1 >= 0:
-                tile = Enemy.TilePath(curr_tile.row, curr_tile.col - 1,
-                                      curr_tile)
-                if tile not in discovered_tiles and not isinstance(tile, Wall):
-                    undiscovered_tiles.append(tile)
+                left_tile = self.world.grid[curr_tile.row][curr_tile.col - 1]
+                if not discovered_tiles[curr_tile.row][curr_tile.col - 1]:
+                    if (not left_tile) or (left_tile and not \
+                            isinstance(left_tile, Wall)):
+                        tile = Enemy.TilePath(curr_tile.row, curr_tile.col - 1,
+                                              curr_tile)
+                        undiscovered_tiles.append(tile)
             if curr_tile.col + 1 < World.TOTAL_COLS:
-                tile = Enemy.TilePath(curr_tile.row, curr_tile.col + 1,
-                                      curr_tile)
-                if tile not in discovered_tiles and not isinstance(tile, Wall):
-                    undiscovered_tiles.append(tile)
+                right_tile = self.world.grid[curr_tile.row][curr_tile.col + 1]
+                if not discovered_tiles[curr_tile.row][curr_tile.col + 1]:
+                    if (not right_tile) or (right_tile and not \
+                            isinstance(right_tile, Wall)):
+                        tile = Enemy.TilePath(curr_tile.row, curr_tile.col + 1,
+                                              curr_tile)
+                        undiscovered_tiles.append(tile)
         self.shortest_path = []
         return

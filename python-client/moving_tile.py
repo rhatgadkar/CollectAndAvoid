@@ -12,7 +12,6 @@ class MovingTile(Tile):
 
     def __init__(self, world):
         self.world = world
-        self.got_food = False
 
     @staticmethod
     def bounding_box(tile1, tile2):

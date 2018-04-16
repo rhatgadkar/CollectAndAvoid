@@ -18,6 +18,7 @@ class Player(MovingTile):
         self.dead = False
         self.score = 0
         self.world.set_player(self)
+        self.got_food = False
 
     def do_something(self):
         x, y = self.position
