@@ -54,4 +54,5 @@ class World:
         for row in range(1, World.BOT_ROW):
             self.grid[row][World.RIGHT_COL] = Wall(row, World.RIGHT_COL)
         # put food in specified row, col
-        self.grid[food_row][food_col] = Food(food_row, food_col)
+        self.food = Food(food_row, food_col)
+        self.grid[food_row][food_col] = self.food

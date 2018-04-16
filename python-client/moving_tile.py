@@ -1,6 +1,9 @@
 from world import World
 from tile import Tile
+from wall import Wall
+from food import Food
 from stationary_tile import StationaryTile
+from random import randint
 
 class MovingTile(Tile):
     VERT_SPEED = 2
@@ -11,7 +14,7 @@ class MovingTile(Tile):
         self.world = world
         self.got_food = False
 
-    def _bounding_box(self, tile):
+    def bounding_box(self, tile):
         ''' Return true if collision between specified tile and moving_tile '''
         if tile == None:
             return False
@@ -30,7 +33,7 @@ class MovingTile(Tile):
             return True
         return False
 
-    def _check_collision(self):
+    def check_collision(self):
         ''' Return the tile that the moving_tile collided with '''
         moving_tile_col = self.position[0] / StationaryTile.DIMS[0]
         moving_tile_row = self.position[1] / StationaryTile.DIMS[1]
@@ -51,6 +54,33 @@ class MovingTile(Tile):
                     tile_col >= World.TOTAL_COLS:
                 continue
             tile = self.world.grid[tile_row][tile_col]
-            if self._bounding_box(tile):
+            if self.bounding_box(tile):
                 return tile
         return None
+
+    def add_new_wall(self):
+        # add new wall tile in location not continaining any tile
+        while True:
+            new_wall_row = randint(0, World.BOT_ROW)
+            new_wall_col = randint(0, World.RIGHT_COL)
+            new_wall = Wall(new_wall_row, new_wall_col)
+            if self.world.grid[new_wall_row][new_wall_col] != None:
+                continue
+            if MovingTile.bounding_box(self, new_wall):
+                continue
+            self.world.grid[new_wall_row][new_wall_col] = new_wall
+            break
+
+    def add_new_food(self):
+        # add new food tile in location not continaining any tile
+        while True:
+            new_food_row = randint(0, World.BOT_ROW)
+            new_food_col = randint(0, World.RIGHT_COL)
+            new_food = Food(new_food_row, new_food_col)
+            if self.world.grid[new_food_row][new_food_col] != None:
+                continue
+            if self.bounding_box(new_food):
+                continue
+            self.world.grid[new_food_row][new_food_col] = new_food
+            self.world.food = new_food
+            break
