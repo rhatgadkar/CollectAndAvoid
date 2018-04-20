@@ -68,10 +68,58 @@ class Enemy(MovingTile):
                 root_tile = root_tile.parent
             return to_return
 
-    def _set_shortest_path(self, src_row, src_col, dst_row, dst_col):
+    def _set_path(self, src_row, src_col, dst_row, dst_col):
         if src_row == dst_row and src_col == dst_col:
             self.shortest_path = []
             return
+        subworld = self.world.get_current_subworld(src_row, src_col)
+        curr_dst_row = None
+        curr_dst_col = None
+        if subworld.is_valid_row_col(dst_row, dst_col):
+            # dst_row and dst_col are in current subworld
+            self.shortest_path = self._get_shortest_path(src_row, src_col,
+                                                         dst_row, dst_col)
+            return
+        # check if src_row and src_col are in a bound:
+        if dst_col < src_col:
+            self.shortest_path = 
+
+        # dst_row and dst_col are not in current subworld and src_row and
+        # src_col are not in a bound
+        if not curr_dst_row and not curr_dst_col and dst_col < src_col and \
+                subworld.left_bound:
+            # dst is left of src
+            (curr_dst_row, curr_dst_col) = subworld.left_bound.pop()
+        elif not curr_dst_row and not curr_dst_col and dst_row < src_row and \
+                subworld.top_bound:
+            # dst is above src
+            (curr_dst_row, curr_dst_col) = subworld.top_bound.pop()
+        elif not curr_dst_row and not curr_dst_col and dst_col > src_col and \
+                subworld.right_bound:
+            # dst is right of src
+            (curr_dst_row, curr_dst_col) = subworld.right_bound.pop()
+        elif not curr_dst_row and not curr_dst_col and dst_row > src_row and \
+                subworld.bot_bound:
+            # dst is below src
+            (curr_dst_row, curr_dst_col) = subworld.bot_bound.pop()
+        elif not curr_dst_row and not curr_dst_col and subworld.left_bound:
+            (curr_dst_row, curr_dst_col) = subworld.left_bound.pop()
+        elif not curr_dst_row and not curr_dst_col and subworld.right_bound:
+            (curr_dst_row, curr_dst_col) = subworld.right_bound.pop()
+        elif not curr_dst_row and not curr_dst_col and subworld.top_bound:
+            (curr_dst_row, curr_dst_col) = subworld.top_bound.pop()
+        elif not curr_dst_row and not curr_dst_col and subworld.bot_bound:
+            (curr_dst_row, curr_dst_col) = subworld.bot_bound.pop()
+        else:
+            self.shortest_path = []
+            return
+        self.shortest_path = self._get_shortest_path(src_row, src_col,
+                                                     curr_dst_row,
+                                                     curr_dst_col)
+
+    def _get_shortest_path(self, src_row, src_col, dst_row, dst_col):
+        if src_row == dst_row and src_col == dst_col:
+            return []
         start_tile = Enemy.TilePath(src_row, src_col, None)
         undiscovered_tiles = [start_tile]
         discovered_tiles = []
@@ -82,8 +130,7 @@ class Enemy(MovingTile):
             curr_tile = undiscovered_tiles.pop(0)
             discovered_tiles[curr_tile.row][curr_tile.col] = curr_tile
             if curr_tile.row == dst_row and curr_tile.col == dst_col:
-                self.shortest_path = curr_tile.get_path()
-                return
+                return curr_tile.get_path()
             if curr_tile.row - 1 >= 0:
                 up_tile = self.world.grid[curr_tile.row - 1][curr_tile.col]
                 if not discovered_tiles[curr_tile.row - 1][curr_tile.col]:
@@ -116,5 +163,4 @@ class Enemy(MovingTile):
                         tile = Enemy.TilePath(curr_tile.row, curr_tile.col + 1,
                                               curr_tile)
                         undiscovered_tiles.append(tile)
-        self.shortest_path = []
-        return
+        return []
