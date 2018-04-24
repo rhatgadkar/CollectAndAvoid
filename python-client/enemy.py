@@ -17,7 +17,7 @@ class Enemy(MovingTile):
         self.color = (0, 0, 255)
         self.shortest_path = []
         self.food = self.world.food
-        self._set_shortest_path(Enemy.STARTING_ROW, Enemy.STARTING_COL,
+        self._set_path(Enemy.STARTING_ROW, Enemy.STARTING_COL,
                                 self.food.row, self.food.col)
         self.world.set_enemy(self)
 
@@ -25,13 +25,22 @@ class Enemy(MovingTile):
         x, y = self.position
         col = x / StationaryTile.DIMS[0]
         row = y / StationaryTile.DIMS[1]
-        if self.world.food.row != self.food.row and \
+        if self.world.food.row != self.food.row or \
                 self.world.food.col != self.food.col:
             # food location updated, so set a new shortest_path
             self.food = self.world.food
-            self._set_shortest_path(row, col, self.food.row, self.food.col)
+            # for subworld in self.world.subworlds:
+            #     subworld.initialize_bounds(self.world)
+            self._set_path(row, col, self.food.row, self.food.col)
         if not self.shortest_path:
-            return
+            # for subworld in self.world.subworlds:
+            #     subworld.initialize_bounds(self.world)
+            self._set_path(row, col, self.food.row, self.food.col)
+            if not self.shortest_path:
+                print 'hello1'
+                print 'self.world.food.row: %d, self.world.food.col: %d' % (self.world.food.row, self.world.food.col)
+                print 'self.food.row: %d, self.foodl.col: %d' % (self.food.row, self.food.col)
+                return
         next_tile = self.shortest_path[0]
         next_tile_x = next_tile.col * StationaryTile.DIMS[1]
         next_tile_y = next_tile.row * StationaryTile.DIMS[0]
@@ -69,8 +78,11 @@ class Enemy(MovingTile):
             return to_return
 
     def _set_path(self, src_row, src_col, dst_row, dst_col):
+        for subworld in self.world.subworlds:
+            subworld.initialize_bounds(self.world)
         if src_row == dst_row and src_col == dst_col:
             self.shortest_path = []
+            print 'hello2'
             return
         subworld = self.world.get_current_subworld(src_row, src_col)
         curr_dst_row = None
@@ -80,42 +92,116 @@ class Enemy(MovingTile):
             self.shortest_path = self._get_shortest_path(src_row, src_col,
                                                          dst_row, dst_col)
             return
-        # check if src_row and src_col are in a bound:
-        if dst_col < src_col:
-            self.shortest_path = 
-
+        # check if src_row and src_col are in a subworld's boundary:
+        src_tile = Enemy.TilePath(src_row, src_col, None)
+        if not subworld.is_valid_row_col(src_row, src_col - 1) and \
+                dst_col < src_col and src_col - 1 >= 0 and not \
+                isinstance(self.world.grid[src_row][src_col - 1], Wall):
+            dst_tile = Enemy.TilePath(src_row, src_col - 1, src_tile)
+            self.shortest_path = [dst_tile]
+            return
+        if not subworld.is_valid_row_col(src_row, src_col + 1) and \
+                dst_col > src_col and src_col + 1 < World.TOTAL_COLS and not \
+                isinstance(self.world.grid[src_row][src_col + 1], Wall):
+            dst_tile = Enemy.TilePath(src_row, src_col + 1, src_tile)
+            self.shortest_path = [dst_tile]
+            return
+        if not subworld.is_valid_row_col(src_row - 1, src_col) and \
+                dst_row < src_row and src_row - 1 >= 0 and not \
+                isinstance(self.world.grid[src_row - 1][src_col], Wall):
+            dst_tile = Enemy.TilePath(src_row - 1, src_col, src_tile)
+            self.shortest_path = [dst_tile]
+            return
+        if not subworld.is_valid_row_col(src_row + 1, src_col) and \
+                dst_row > src_row and src_row + 1 < World.TOTAL_ROWS and not \
+                isinstance(self.world.grid[src_row + 1][src_col], Wall):
+            dst_tile = Enemy.TilePath(src_row + 1, src_col, src_tile)
+            self.shortest_path = [dst_tile]
+            return
         # dst_row and dst_col are not in current subworld and src_row and
-        # src_col are not in a bound
+        # src_col are not in the subworld's boundary
         if not curr_dst_row and not curr_dst_col and dst_col < src_col and \
                 subworld.left_bound:
             # dst is left of src
-            (curr_dst_row, curr_dst_col) = subworld.left_bound.pop()
-        elif not curr_dst_row and not curr_dst_col and dst_row < src_row and \
+            while subworld.left_bound:
+                (curr_dst_row, curr_dst_col) = subworld.left_bound.pop()
+                if not self.world.grid[curr_dst_row][curr_dst_col]:
+                    self.shortest_path = self._get_shortest_path(
+                        src_row, src_col, curr_dst_row, curr_dst_col)
+                    return
+            curr_dst_row = None
+            curr_dst_col = None
+        if not curr_dst_row and not curr_dst_col and dst_row < src_row and \
                 subworld.top_bound:
             # dst is above src
-            (curr_dst_row, curr_dst_col) = subworld.top_bound.pop()
-        elif not curr_dst_row and not curr_dst_col and dst_col > src_col and \
+            while subworld.top_bound:
+                (curr_dst_row, curr_dst_col) = subworld.top_bound.pop()
+                if not self.world.grid[curr_dst_row][curr_dst_col]:
+                    self.shortest_path = self._get_shortest_path(
+                        src_row, src_col, curr_dst_row, curr_dst_col)
+                    return
+            curr_dst_row = None
+            curr_dst_col = None
+        if not curr_dst_row and not curr_dst_col and dst_col > src_col and \
                 subworld.right_bound:
             # dst is right of src
-            (curr_dst_row, curr_dst_col) = subworld.right_bound.pop()
-        elif not curr_dst_row and not curr_dst_col and dst_row > src_row and \
+            while subworld.right_bound:
+                (curr_dst_row, curr_dst_col) = subworld.right_bound.pop()
+                if not self.world.grid[curr_dst_row][curr_dst_col]:
+                    self.shortest_path = self._get_shortest_path(
+                        src_row, src_col, curr_dst_row, curr_dst_col)
+                    return
+            curr_dst_row = None
+            curr_dst_col = None
+        if not curr_dst_row and not curr_dst_col and dst_row > src_row and \
                 subworld.bot_bound:
             # dst is below src
-            (curr_dst_row, curr_dst_col) = subworld.bot_bound.pop()
-        elif not curr_dst_row and not curr_dst_col and subworld.left_bound:
-            (curr_dst_row, curr_dst_col) = subworld.left_bound.pop()
-        elif not curr_dst_row and not curr_dst_col and subworld.right_bound:
-            (curr_dst_row, curr_dst_col) = subworld.right_bound.pop()
-        elif not curr_dst_row and not curr_dst_col and subworld.top_bound:
-            (curr_dst_row, curr_dst_col) = subworld.top_bound.pop()
-        elif not curr_dst_row and not curr_dst_col and subworld.bot_bound:
-            (curr_dst_row, curr_dst_col) = subworld.bot_bound.pop()
-        else:
-            self.shortest_path = []
-            return
-        self.shortest_path = self._get_shortest_path(src_row, src_col,
-                                                     curr_dst_row,
-                                                     curr_dst_col)
+            while subworld.bot_bound:
+                (curr_dst_row, curr_dst_col) = subworld.bot_bound.pop()
+                if not self.world.grid[curr_dst_row][curr_dst_col]:
+                    self.shortest_path = self._get_shortest_path(
+                        src_row, src_col, curr_dst_row, curr_dst_col)
+                    return
+            curr_dst_row = None
+            curr_dst_col = None
+        if not curr_dst_row and not curr_dst_col and subworld.left_bound:
+            while subworld.left_bound:
+                (curr_dst_row, curr_dst_col) = subworld.left_bound.pop()
+                if not self.world.grid[curr_dst_row][curr_dst_col]:
+                    self.shortest_path = self._get_shortest_path(
+                        src_row, src_col, curr_dst_row, curr_dst_col)
+                    return
+            curr_dst_row = None
+            curr_dst_col = None
+        if not curr_dst_row and not curr_dst_col and subworld.right_bound:
+            while subworld.right_bound:
+                (curr_dst_row, curr_dst_col) = subworld.right_bound.pop()
+                if not self.world.grid[curr_dst_row][curr_dst_col]:
+                    self.shortest_path = self._get_shortest_path(
+                        src_row, src_col, curr_dst_row, curr_dst_col)
+                    return
+            curr_dst_row = None
+            curr_dst_col = None
+        if not curr_dst_row and not curr_dst_col and subworld.top_bound:
+            while subworld.top_bound:
+                (curr_dst_row, curr_dst_col) = subworld.top_bound.pop()
+                if not self.world.grid[curr_dst_row][curr_dst_col]:
+                    self.shortest_path = self._get_shortest_path(
+                        src_row, src_col, curr_dst_row, curr_dst_col)
+                    return
+            curr_dst_row = None
+            curr_dst_col = None
+        if not curr_dst_row and not curr_dst_col and subworld.bot_bound:
+            while subworld.bot_bound:
+                (curr_dst_row, curr_dst_col) = subworld.bot_bound.pop()
+                if not self.world.grid[curr_dst_row][curr_dst_col]:
+                    self.shortest_path = self._get_shortest_path(
+                        src_row, src_col, curr_dst_row, curr_dst_col)
+                    return
+            curr_dst_row = None
+            curr_dst_col = None
+        print 'hello3'
+        self.shortest_path = []
 
     def _get_shortest_path(self, src_row, src_col, dst_row, dst_col):
         if src_row == dst_row and src_col == dst_col:
