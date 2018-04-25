@@ -20,7 +20,7 @@ class World:
             self.top_bound = []
             self.bot_bound = []
 
-        def initialize_bounds(self, world):
+        def reset_bounds(self, world):
             ''' append empty tiles to bounds '''
             self.left_bound = []
             self.right_bound = []
@@ -36,6 +36,29 @@ class World:
                     self.top_bound.append((self.row_range[0], col))
                 if not world.grid[self.row_range[-1]][col]:
                     self.bot_bound.append((self.row_range[-1], col))
+
+        def check_bounds(self, world):
+            ''' remove tiles from bounds that are Walls '''
+            original_left_bound = self.left_bound
+            original_right_bound = self.right_bound
+            original_top_bound = self.top_bound
+            original_bot_bound = self.bot_bound
+            self.left_bound = []
+            self.right_bound = []
+            self.top_bound = []
+            self.bot_bound = []
+            for (row, col) in original_left_bound:
+                if not world.grid[row][col]:
+                    self.left_bound.append((row, col))
+            for (row, col) in original_right_bound:
+                if not world.grid[row][col]:
+                    self.right_bound.append((row, col))
+            for (row, col) in original_top_bound:
+                if not world.grid[row][col]:
+                    self.top_bound.append((row, col))
+            for (row, col) in original_bot_bound:
+                if not world.grid[row][col]:
+                    self.bot_bound.append((row, col))
         
         def is_valid_row_col(self, row, col):
             return (row in self.row_range and col in self.col_range)
@@ -107,7 +130,7 @@ class World:
                 row_range = range(row_iter, row_iter + World.NUM_SUBWORLD_ROWS)
                 col_range = range(col_iter, col_iter + World.NUM_SUBWORLD_COLS)
                 new_world = World.SubWorld(row_range, col_range)
-                new_world.initialize_bounds(self)
+                new_world.reset_bounds(self)
                 self.subworlds.append(new_world)
                 col_iter += (World.NUM_SUBWORLD_COLS)
             row_iter += (World.NUM_SUBWORLD_ROWS)
