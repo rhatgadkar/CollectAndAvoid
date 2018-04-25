@@ -165,6 +165,7 @@ class Enemy(MovingTile):
         print 'hello3'
         return []
 
+    # TODO: limit the breadth-first search depth of _get_shortest_path
     def _get_shortest_path(self, src_row, src_col, dst_row, dst_col):
         if src_row == dst_row and src_col == dst_col:
             return []
