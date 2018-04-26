@@ -38,10 +38,20 @@ class Enemy(MovingTile):
             self.shortest_path = self._get_new_path(row, col, self.food.row,
                                                     self.food.col)
             if not self.shortest_path:
+                import pdb; pdb.set_trace()
+                self.shortest_path = self._get_new_path(row, col, self.food.row,
+                                                    self.food.col)
                 # no shortest path found for new destination
                 print 'hello1'
                 print 'self.world.food.row: %d, self.world.food.col: %d' % (self.world.food.row, self.world.food.col)
                 print 'self.food.row: %d, self.foodl.col: %d' % (self.food.row, self.food.col)
+                subworld = self.world.get_current_subworld(row, col)
+                print 'subworld.left_bound: %s' % str(subworld.left_bound)
+                print 'subworld.right_bound: %s' % str(subworld.right_bound)
+                print 'subworld.top_bound: %s' % str(subworld.top_bound)
+                print 'subworld.bot_bound: %s' % str(subworld.bot_bound)
+                print 'row: %s' % str(row)
+                print 'col: %s' % str(col)
                 return
         next_tile = self.shortest_path[0]
         next_tile_x = next_tile.col * StationaryTile.DIMS[1]
@@ -88,7 +98,8 @@ class Enemy(MovingTile):
         subworld = self.world.get_current_subworld(src_row, src_col)
         if subworld.is_valid_row_col(dst_row, dst_col):
             # dst_row and dst_col are in current subworld
-            return self._get_shortest_path(src_row, src_col, dst_row, dst_col)
+            return self._get_shortest_path(src_row, src_col, dst_row, dst_col,
+                                           subworld)
         # check if src_row and src_col have reached a boundary destination:
         src_tile = Enemy.TilePath(src_row, src_col, None)
         if not subworld.is_valid_row_col(src_row, src_col - 1) and \
@@ -118,55 +129,79 @@ class Enemy(MovingTile):
             while subworld.left_bound:
                 (curr_dst_row, curr_dst_col) = subworld.left_bound.pop(
                     randint(0, len(subworld.left_bound) - 1))
-                return self._get_shortest_path(src_row, src_col, curr_dst_row,
-                                               curr_dst_col)
+                shortest_path = self._get_shortest_path(src_row, src_col,
+                                                        curr_dst_row,
+                                                        curr_dst_col, subworld)
+                if shortest_path:
+                    return shortest_path
         if dst_row < src_row:
             # dst is above src
             while subworld.top_bound:
                 (curr_dst_row, curr_dst_col) = subworld.top_bound.pop(
                     randint(0, len(subworld.top_bound) - 1))
-                return self._get_shortest_path(src_row, src_col, curr_dst_row,
-                                               curr_dst_col)
+                shortest_path = self._get_shortest_path(src_row, src_col,
+                                                        curr_dst_row,
+                                                        curr_dst_col, subworld)
+                if shortest_path:
+                    return shortest_path
         if dst_col > src_col:
             # dst is right of src
             while subworld.right_bound:
                 (curr_dst_row, curr_dst_col) = subworld.right_bound.pop(
                     randint(0, len(subworld.right_bound) - 1))
-                return self._get_shortest_path(src_row, src_col, curr_dst_row,
-                                               curr_dst_col)
+                shortest_path = self._get_shortest_path(src_row, src_col,
+                                                        curr_dst_row,
+                                                        curr_dst_col, subworld)
+                if shortest_path:
+                    return shortest_path
         if dst_row > src_row:
             # dst is below src
             while subworld.bot_bound:
                 (curr_dst_row, curr_dst_col) = subworld.bot_bound.pop(
                     randint(0, len(subworld.bot_bound) - 1))
-                return self._get_shortest_path(src_row, src_col, curr_dst_row,
-                                               curr_dst_col)
+                shortest_path = self._get_shortest_path(src_row, src_col,
+                                                        curr_dst_row,
+                                                        curr_dst_col, subworld)
+                if shortest_path:
+                    return shortest_path
         # no path found toward destination.  choose any available path now:
         while subworld.left_bound:
             (curr_dst_row, curr_dst_col) = subworld.left_bound.pop(
                 randint(0, len(subworld.left_bound) - 1))
-            return self._get_shortest_path(src_row, src_col, curr_dst_row,
-                                           curr_dst_col)
+            shortest_path = self._get_shortest_path(src_row, src_col,
+                                                        curr_dst_row,
+                                                        curr_dst_col, subworld)
+            if shortest_path:
+                return shortest_path
         while subworld.right_bound:
             (curr_dst_row, curr_dst_col) = subworld.right_bound.pop(
                 randint(0, len(subworld.right_bound) - 1))
-            return self._get_shortest_path(src_row, src_col, curr_dst_row,
-                                           curr_dst_col)
+            shortest_path = self._get_shortest_path(src_row, src_col,
+                                                        curr_dst_row,
+                                                        curr_dst_col, subworld)
+            if shortest_path:
+                return shortest_path
         while subworld.top_bound:
             (curr_dst_row, curr_dst_col) = subworld.top_bound.pop(
                 randint(0, len(subworld.top_bound) - 1))
-            return self._get_shortest_path(src_row, src_col, curr_dst_row,
-                                           curr_dst_col)
+            shortest_path = self._get_shortest_path(src_row, src_col,
+                                                        curr_dst_row,
+                                                        curr_dst_col, subworld)
+            if shortest_path:
+                return shortest_path
         while subworld.bot_bound:
             (curr_dst_row, curr_dst_col) = subworld.bot_bound.pop(
                 randint(0, len(subworld.bot_bound) - 1))
-            return self._get_shortest_path(src_row, src_col, curr_dst_row,
-                                           curr_dst_col)
+            shortest_path = self._get_shortest_path(src_row, src_col,
+                                                        curr_dst_row,
+                                                        curr_dst_col, subworld)
+            if shortest_path:
+                return shortest_path
         print 'hello3'
         return []
 
     # TODO: limit the breadth-first search depth of _get_shortest_path
-    def _get_shortest_path(self, src_row, src_col, dst_row, dst_col):
+    def _get_shortest_path(self, src_row, src_col, dst_row, dst_col, subworld):
         if src_row == dst_row and src_col == dst_col:
             return []
         start_tile = Enemy.TilePath(src_row, src_col, None)
@@ -180,7 +215,9 @@ class Enemy(MovingTile):
             discovered_tiles[curr_tile.row][curr_tile.col] = curr_tile
             if curr_tile.row == dst_row and curr_tile.col == dst_col:
                 return curr_tile.get_path()
-            if curr_tile.row - 1 >= 0:
+            if curr_tile.row - 1 >= 0 and \
+                    subworld.is_valid_row_col(curr_tile.row - 1,
+                                              curr_tile.col):
                 up_tile = self.world.grid[curr_tile.row - 1][curr_tile.col]
                 if not discovered_tiles[curr_tile.row - 1][curr_tile.col]:
                     if (not up_tile) or (up_tile and not \
@@ -188,7 +225,9 @@ class Enemy(MovingTile):
                         tile = Enemy.TilePath(curr_tile.row - 1, curr_tile.col,
                                               curr_tile)
                         undiscovered_tiles.append(tile)
-            if curr_tile.row + 1 < World.TOTAL_ROWS:
+            if curr_tile.row + 1 < World.TOTAL_ROWS and \
+                    subworld.is_valid_row_col(curr_tile.row + 1,
+                                              curr_tile.col):
                 down_tile = self.world.grid[curr_tile.row + 1][curr_tile.col]
                 if not discovered_tiles[curr_tile.row + 1][curr_tile.col]:
                     if (not down_tile) or (down_tile and not \
@@ -196,7 +235,9 @@ class Enemy(MovingTile):
                         tile = Enemy.TilePath(curr_tile.row + 1, curr_tile.col,
                                               curr_tile)
                         undiscovered_tiles.append(tile)
-            if curr_tile.col - 1 >= 0:
+            if curr_tile.col - 1 >= 0 and \
+                    subworld.is_valid_row_col(curr_tile.row,
+                                              curr_tile.col - 1):
                 left_tile = self.world.grid[curr_tile.row][curr_tile.col - 1]
                 if not discovered_tiles[curr_tile.row][curr_tile.col - 1]:
                     if (not left_tile) or (left_tile and not \
@@ -204,7 +245,9 @@ class Enemy(MovingTile):
                         tile = Enemy.TilePath(curr_tile.row, curr_tile.col - 1,
                                               curr_tile)
                         undiscovered_tiles.append(tile)
-            if curr_tile.col + 1 < World.TOTAL_COLS:
+            if curr_tile.col + 1 < World.TOTAL_COLS and \
+                    subworld.is_valid_row_col(curr_tile.row,
+                                              curr_tile.col + 1):
                 right_tile = self.world.grid[curr_tile.row][curr_tile.col + 1]
                 if not discovered_tiles[curr_tile.row][curr_tile.col + 1]:
                     if (not right_tile) or (right_tile and not \
