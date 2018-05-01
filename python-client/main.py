@@ -20,10 +20,11 @@ pygame.font.init()
 myfont = pygame.font.SysFont('Comic Sans MS', 16)
 clock = pygame.time.Clock()
 world = None
-player = None
+#player = None
 enemy = None
 game_started = False
 text_surface = myfont.render("Press 'Enter' to start game.", False, WHITE)
+game_paused = False
 
 while True:
     # user input
@@ -44,10 +45,10 @@ while True:
                             continue
                         break
                     world = World(food_row, food_col)
-                    player = Player(world)
+                    #player = Player(world)
                     enemy = Enemy(world)
                     Keys.reset()
-                    player.dead = False
+                    #player.dead = False
                 elif event.key == pygame.locals.K_ESCAPE:
                     exit(0)
             else:
@@ -61,15 +62,19 @@ while True:
                     Keys.set_down()
                 elif event.key == pygame.locals.K_ESCAPE:
                     exit(0)
+                elif event.key == pygame.locals.K_p:
+                    game_paused = not game_paused
 
     # simulation
+    if game_paused:
+        continue
     if game_started:
         enemy.do_something()
-        player.do_something()
-        if player.dead:
-            game_started = False
-            text_surface = myfont.render(
-                "Game over. Press 'Enter' to start new game.", False, WHITE)
+        #player.do_something()
+        #if player.dead:
+        #    game_started = False
+        #    text_surface = myfont.render(
+        #        "Game over. Press 'Enter' to start new game.", False, WHITE)
 
     # rendering
     screen.fill(BLACK)
@@ -85,18 +90,53 @@ while True:
                 t_rect = pygame.Rect(t_draw_position, StationaryTile.DIMS)
                 pygame.draw.rect(screen, t.color, t_rect)
         # draw player:
-        player_draw_position = (player.position[0],
-                                player.position[1] + TILE_Y_OFFSET)
-        player_rect = pygame.Rect(player_draw_position, MovingTile.DIMS)
-        pygame.draw.rect(screen, player.color, player_rect)
+        #player_draw_position = (player.position[0],
+        #                        player.position[1] + TILE_Y_OFFSET)
+        #player_rect = pygame.Rect(player_draw_position, MovingTile.DIMS)
+        #pygame.draw.rect(screen, player.color, player_rect)
         # draw enemy:
         enemy_draw_position = (enemy.position[0],
                                enemy.position[1] + TILE_Y_OFFSET)
         enemy_rect = pygame.Rect(enemy_draw_position, MovingTile.DIMS)
         pygame.draw.rect(screen, enemy.color, enemy_rect)
-        score_surface = myfont.render('Score: %s' % str(player.score), False,
-                                      WHITE)
-        screen.blit(score_surface, (0, 0))
+        #score_surface = myfont.render('Score: %s' % str(player.score), False,
+        #                              WHITE)
+        #screen.blit(score_surface, (0, 0))
+        pygame.draw.line(screen, WHITE, (100, 0 + TILE_Y_OFFSET), (100, 400 + TILE_Y_OFFSET))
+        pygame.draw.line(screen, WHITE, (200, 0 + TILE_Y_OFFSET), (200, 400 + TILE_Y_OFFSET))
+        pygame.draw.line(screen, WHITE, (300, 0 + TILE_Y_OFFSET), (300, 400 + TILE_Y_OFFSET))
+        pygame.draw.line(screen, WHITE, (0, 100 + TILE_Y_OFFSET), (400, 100 + TILE_Y_OFFSET))
+        pygame.draw.line(screen, WHITE, (0, 200 + TILE_Y_OFFSET), (400, 200 + TILE_Y_OFFSET))
+        pygame.draw.line(screen, WHITE, (0, 300 + TILE_Y_OFFSET), (400, 300 + TILE_Y_OFFSET))
+        for subworld in world.subworlds:
+            for (row, col) in subworld.left_bound:
+                bound_draw_position = (col * StationaryTile.DIMS[0],
+                                       row * StationaryTile.DIMS[1] +
+                                       TILE_Y_OFFSET)
+                bound_rect = pygame.Rect(bound_draw_position,
+                                         StationaryTile.DIMS)
+                pygame.draw.rect(screen, (255, 255, 0), bound_rect, 1)
+            for (row, col) in subworld.right_bound:
+                bound_draw_position = (col * StationaryTile.DIMS[0],
+                                       row * StationaryTile.DIMS[1] +
+                                       TILE_Y_OFFSET)
+                bound_rect = pygame.Rect(bound_draw_position,
+                                         StationaryTile.DIMS)
+                pygame.draw.rect(screen, (255, 255, 0), bound_rect, 1)
+            for (row, col) in subworld.top_bound:
+                bound_draw_position = (col * StationaryTile.DIMS[0],
+                                       row * StationaryTile.DIMS[1] +
+                                       TILE_Y_OFFSET)
+                bound_rect = pygame.Rect(bound_draw_position,
+                                         StationaryTile.DIMS)
+                pygame.draw.rect(screen, (255, 255, 0), bound_rect, 1)
+            for (row, col) in subworld.bot_bound:
+                bound_draw_position = (col * StationaryTile.DIMS[0],
+                                       row * StationaryTile.DIMS[1] +
+                                       TILE_Y_OFFSET)
+                bound_rect = pygame.Rect(bound_draw_position,
+                                         StationaryTile.DIMS)
+                pygame.draw.rect(screen, (255, 255, 0), bound_rect, 1)
     else:
         screen.blit(text_surface, (50, 50))
     pygame.display.flip()

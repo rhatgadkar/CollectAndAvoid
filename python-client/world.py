@@ -63,6 +63,12 @@ class World:
         def is_valid_row_col(self, row, col):
             return (row in self.row_range and col in self.col_range)
 
+        def all_bounds_empty(self):
+            if self.left_bound or self.right_bound or self.top_bound or \
+                    self.bot_bound:
+                return False
+            return True
+
     def __init__(self, food_row, food_col):
         self.player = None
         self.enemy = None
