@@ -93,62 +93,65 @@ class Enemy(MovingTile):
                 return shortest_path
         # check if src_row and src_col have reached a boundary destination:
         src_tile = Enemy.TilePath(src_row, src_col, None)
+        dst_tile = None
         neighbor_subworld = self.world.get_current_subworld(src_row,
                                                             src_col - 1)
-        if not subworld.is_valid_row_col(src_row, src_col - 1) and \
-                dst_col < src_col and not \
+        if not subworld.is_valid_row_col(src_row, src_col - 1) and not \
                 isinstance(self.world.grid[src_row][src_col - 1], Wall) and \
                 (not neighbor_subworld.all_bounds_empty() or \
                 neighbor_subworld.is_valid_row_col(dst_row, dst_col)) and \
                 (src_row, src_col) in subworld.left_bound and not \
                 self.entering_new_subworld:
-            self.entering_new_subworld = True
-            subworld.left_bound.pop(len(subworld.left_bound) / 2)
             dst_tile = Enemy.TilePath(src_row, src_col - 1, src_tile)
-            print 'reach left'
-            return [dst_tile]
+            if dst_col < src_col:
+                self.entering_new_subworld = True
+                subworld.left_bound.pop(len(subworld.left_bound) / 2)
+                print 'reach left'
+                return [dst_tile]
         neighbor_subworld = self.world.get_current_subworld(src_row,
                                                             src_col + 1)
-        if not subworld.is_valid_row_col(src_row, src_col + 1) and \
-                dst_col > src_col and not \
+        if not subworld.is_valid_row_col(src_row, src_col + 1) and not \
                 isinstance(self.world.grid[src_row][src_col + 1], Wall) and \
                 (not neighbor_subworld.all_bounds_empty() or \
                 neighbor_subworld.is_valid_row_col(dst_row, dst_col)) and \
                 (src_row, src_col) in subworld.right_bound and not \
                 self.entering_new_subworld:
-            self.entering_new_subworld = True
-            subworld.right_bound.pop(len(subworld.right_bound) / 2)
             dst_tile = Enemy.TilePath(src_row, src_col + 1, src_tile)
-            print 'reach right'
-            return [dst_tile]
+            if dst_col > src_col:
+                self.entering_new_subworld = True
+                subworld.right_bound.pop(len(subworld.right_bound) / 2)
+                print 'reach right'
+                return [dst_tile]
         neighbor_subworld = self.world.get_current_subworld(src_row - 1,
                                                             src_col)
-        if not subworld.is_valid_row_col(src_row - 1, src_col) and \
-                dst_row < src_row and not \
+        if not subworld.is_valid_row_col(src_row - 1, src_col) and not \
                 isinstance(self.world.grid[src_row - 1][src_col], Wall) and \
                 (not neighbor_subworld.all_bounds_empty() or \
                 neighbor_subworld.is_valid_row_col(dst_row, dst_col)) and \
                 (src_row, src_col) in subworld.top_bound and not \
                 self.entering_new_subworld:
-            self.entering_new_subworld = True
-            subworld.top_bound.pop(len(subworld.top_bound) / 2)
             dst_tile = Enemy.TilePath(src_row - 1, src_col, src_tile)
-            print 'reach top'
-            return [dst_tile]
+            if dst_row < src_row:
+                self.entering_new_subworld = True
+                subworld.top_bound.pop(len(subworld.top_bound) / 2)
+                print 'reach top'
+                return [dst_tile]
         neighbor_subworld = self.world.get_current_subworld(src_row + 1,
                                                             src_col)
-        if not subworld.is_valid_row_col(src_row + 1, src_col) and \
-                dst_row > src_row and not \
+        if not subworld.is_valid_row_col(src_row + 1, src_col) and not \
                 isinstance(self.world.grid[src_row + 1][src_col], Wall) and \
                 (not neighbor_subworld.all_bounds_empty() or \
                 neighbor_subworld.is_valid_row_col(dst_row, dst_col)) and \
                 (src_row, src_col) in subworld.bot_bound and not \
                 self.entering_new_subworld:
-            self.entering_new_subworld = True
-            subworld.bot_bound.pop(len(subworld.bot_bound) / 2)
             dst_tile = Enemy.TilePath(src_row + 1, src_col, src_tile)
-            print 'reach bot'
-            return [dst_tile]
+            if dst_row > src_row:
+                self.entering_new_subworld = True
+                subworld.bot_bound.pop(len(subworld.bot_bound) / 2)
+                print 'reach bot'
+                return [dst_tile]
+        # food is not in the new subworld's direction, and pop the visited tile
+        # from the bound:
         if not self.entering_new_subworld:
             if (src_row, src_col) in subworld.left_bound:
                 subworld.left_bound.pop(len(subworld.left_bound) / 2)
@@ -159,7 +162,7 @@ class Enemy(MovingTile):
             elif (src_row, src_col) in subworld.bot_bound:
                 subworld.bot_bound.pop(len(subworld.bot_bound) / 2)
         # dst_row and dst_col are not in current subworld and src_row and
-        # src_col are not in a boundary destination:
+        # src_col are not in a boundary destination toward the food:
         if dst_col < src_col:
             while subworld.left_bound:
                 (curr_dst_row, curr_dst_col) = subworld.left_bound[
@@ -210,85 +213,8 @@ class Enemy(MovingTile):
                 subworld.bot_bound.pop(len(subworld.bot_bound) / 2)
         # at boundary destination, but destination is not in direction.
         # no path toward destination, so go anyway in this direction.
-        neighbor_subworld = self.world.get_current_subworld(src_row,
-                                                            src_col - 1)
-        if not subworld.is_valid_row_col(src_row, src_col - 1) and not \
-                isinstance(self.world.grid[src_row][src_col - 1], Wall) and \
-                (not neighbor_subworld.all_bounds_empty() or \
-                neighbor_subworld.is_valid_row_col(dst_row, dst_col)) and \
-                (src_row, src_col) in subworld.left_bound and not \
-                self.entering_new_subworld:
+        if dst_tile:
             self.entering_new_subworld = True
-            #subworld.left_bound.pop(len(subworld.left_bound) / 2)
-            dst_tile = Enemy.TilePath(src_row, src_col - 1, src_tile)
-            print 'left bound: %s' % subworld.left_bound
-            print 'right bound: %s' % subworld.right_bound
-            print 'top bound: %s' % subworld.top_bound
-            print 'bot bound: %s' % subworld.bot_bound
-            print 'neighbor left bound: %s' % neighbor_subworld.left_bound
-            print 'neighbor right bound: %s' % neighbor_subworld.right_bound
-            print 'neighbor top bound: %s' % neighbor_subworld.top_bound
-            print 'neighbor bot bound: %s' % neighbor_subworld.bot_bound
-            return [dst_tile]
-        neighbor_subworld = self.world.get_current_subworld(src_row,
-                                                            src_col + 1)
-        if not subworld.is_valid_row_col(src_row, src_col + 1) and not \
-                isinstance(self.world.grid[src_row][src_col + 1], Wall) and \
-                (not neighbor_subworld.all_bounds_empty() or \
-                neighbor_subworld.is_valid_row_col(dst_row, dst_col)) and \
-                (src_row, src_col) in subworld.right_bound and not \
-                self.entering_new_subworld:
-            self.entering_new_subworld = True
-            #subworld.right_bound.pop(len(subworld.right_bound) / 2)
-            dst_tile = Enemy.TilePath(src_row, src_col + 1, src_tile)
-            print 'left bound: %s' % subworld.left_bound
-            print 'right bound: %s' % subworld.right_bound
-            print 'top bound: %s' % subworld.top_bound
-            print 'bot bound: %s' % subworld.bot_bound
-            print 'neighbor left bound: %s' % neighbor_subworld.left_bound
-            print 'neighbor right bound: %s' % neighbor_subworld.right_bound
-            print 'neighbor top bound: %s' % neighbor_subworld.top_bound
-            print 'neighbor bot bound: %s' % neighbor_subworld.bot_bound
-            return [dst_tile]
-        neighbor_subworld = self.world.get_current_subworld(src_row - 1,
-                                                            src_col)
-        if not subworld.is_valid_row_col(src_row - 1, src_col) and not \
-                isinstance(self.world.grid[src_row - 1][src_col], Wall) and \
-                (not neighbor_subworld.all_bounds_empty() or \
-                neighbor_subworld.is_valid_row_col(dst_row, dst_col)) and \
-                (src_row, src_col) in subworld.top_bound and not \
-                self.entering_new_subworld:
-            self.entering_new_subworld = True
-            #subworld.top_bound.pop(len(subworld.top_bound) / 2)
-            dst_tile = Enemy.TilePath(src_row - 1, src_col, src_tile)
-            print 'left bound: %s' % subworld.left_bound
-            print 'right bound: %s' % subworld.right_bound
-            print 'top bound: %s' % subworld.top_bound
-            print 'bot bound: %s' % subworld.bot_bound
-            print 'neighbor left bound: %s' % neighbor_subworld.left_bound
-            print 'neighbor right bound: %s' % neighbor_subworld.right_bound
-            print 'neighbor top bound: %s' % neighbor_subworld.top_bound
-            print 'neighbor bot bound: %s' % neighbor_subworld.bot_bound
-            return [dst_tile]
-        neighbor_subworld = self.world.get_current_subworld(src_row + 1,
-                                                            src_col)
-        if not subworld.is_valid_row_col(src_row + 1, src_col) and not \
-                isinstance(self.world.grid[src_row + 1][src_col], Wall) and \
-                (not neighbor_subworld.all_bounds_empty() or \
-                neighbor_subworld.is_valid_row_col(dst_row, dst_col)) and \
-                (src_row, src_col) in subworld.bot_bound and not \
-                self.entering_new_subworld:
-            self.entering_new_subworld = True
-            #subworld.bot_bound.pop(len(subworld.bot_bound) / 2)
-            dst_tile = Enemy.TilePath(src_row + 1, src_col, src_tile)
-            print 'left bound: %s' % subworld.left_bound
-            print 'right bound: %s' % subworld.right_bound
-            print 'top bound: %s' % subworld.top_bound
-            print 'bot bound: %s' % subworld.bot_bound
-            print 'neighbor left bound: %s' % neighbor_subworld.left_bound
-            print 'neighbor right bound: %s' % neighbor_subworld.right_bound
-            print 'neighbor top bound: %s' % neighbor_subworld.top_bound
-            print 'neighbor bot bound: %s' % neighbor_subworld.bot_bound
             return [dst_tile]
         # no path found toward destination.  choose any available path now.
         while subworld.left_bound:
