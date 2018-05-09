@@ -40,7 +40,6 @@ class Enemy(MovingTile):
                                                     self.food.col)
             if not self.shortest_path:
                 # no shortest path found for new destination
-                print 'frozen'
                 return
         next_tile = self.shortest_path[0]
         next_tile_x = next_tile.col * StationaryTile.DIMS[1]
@@ -89,7 +88,6 @@ class Enemy(MovingTile):
             shortest_path = self._get_shortest_path(src_row, src_col, dst_row,
                                                     dst_col, subworld)
             if shortest_path:
-                print 'path in bound'
                 return shortest_path
         # check if src_row and src_col have reached a boundary destination:
         src_tile = Enemy.TilePath(src_row, src_col, None)
@@ -106,7 +104,6 @@ class Enemy(MovingTile):
             if dst_col < src_col:
                 self.entering_new_subworld = True
                 subworld.left_bound.pop(len(subworld.left_bound) / 2)
-                print 'reach left'
                 return [dst_tile]
         neighbor_subworld = self.world.get_current_subworld(src_row,
                                                             src_col + 1)
@@ -120,7 +117,6 @@ class Enemy(MovingTile):
             if dst_col > src_col:
                 self.entering_new_subworld = True
                 subworld.right_bound.pop(len(subworld.right_bound) / 2)
-                print 'reach right'
                 return [dst_tile]
         neighbor_subworld = self.world.get_current_subworld(src_row - 1,
                                                             src_col)
@@ -134,7 +130,6 @@ class Enemy(MovingTile):
             if dst_row < src_row:
                 self.entering_new_subworld = True
                 subworld.top_bound.pop(len(subworld.top_bound) / 2)
-                print 'reach top'
                 return [dst_tile]
         neighbor_subworld = self.world.get_current_subworld(src_row + 1,
                                                             src_col)
@@ -148,7 +143,6 @@ class Enemy(MovingTile):
             if dst_row > src_row:
                 self.entering_new_subworld = True
                 subworld.bot_bound.pop(len(subworld.bot_bound) / 2)
-                print 'reach bot'
                 return [dst_tile]
         # food is not in the new subworld's direction, and pop the visited tile
         # from the bound:
@@ -172,7 +166,6 @@ class Enemy(MovingTile):
                                                         curr_dst_col, subworld)
                 if shortest_path:
                     self.entering_new_subworld = False
-                    print 'go to left'
                     return shortest_path
                 subworld.left_bound.pop(len(subworld.left_bound) / 2)
         if dst_row < src_row:
@@ -184,7 +177,6 @@ class Enemy(MovingTile):
                                                         curr_dst_col, subworld)
                 if shortest_path:
                     self.entering_new_subworld = False
-                    print 'go to top'
                     return shortest_path
                 subworld.top_bound.pop(len(subworld.top_bound) / 2)
         if dst_col > src_col:
@@ -196,7 +188,6 @@ class Enemy(MovingTile):
                                                         curr_dst_col, subworld)
                 if shortest_path:
                     self.entering_new_subworld = False
-                    print 'go to right'
                     return shortest_path
                 subworld.right_bound.pop(len(subworld.right_bound) / 2)
         if dst_row > src_row:
@@ -208,7 +199,6 @@ class Enemy(MovingTile):
                                                         curr_dst_col, subworld)
                 if shortest_path:
                     self.entering_new_subworld = False
-                    print 'go to bot'
                     return shortest_path
                 subworld.bot_bound.pop(len(subworld.bot_bound) / 2)
         # at boundary destination, but destination is not in direction.
@@ -225,7 +215,6 @@ class Enemy(MovingTile):
                                                     curr_dst_col, subworld)
             if shortest_path:
                 self.entering_new_subworld = False
-                print 'no path. go to left bound'
                 return shortest_path
             subworld.left_bound.pop(len(subworld.left_bound) / 2)
         while subworld.right_bound:
@@ -236,7 +225,6 @@ class Enemy(MovingTile):
                                                     curr_dst_col, subworld)
             if shortest_path:
                 self.entering_new_subworld = False
-                print 'no path. go to right bound'
                 return shortest_path
             subworld.right_bound.pop(len(subworld.right_bound) / 2)
         while subworld.top_bound:
@@ -247,7 +235,6 @@ class Enemy(MovingTile):
                                                     curr_dst_col, subworld)
             if shortest_path:
                 self.entering_new_subworld = False
-                print 'no path. go to top bound'
                 return shortest_path
             subworld.top_bound.pop(len(subworld.top_bound) / 2)
         while subworld.bot_bound:
@@ -258,7 +245,6 @@ class Enemy(MovingTile):
                                                     curr_dst_col, subworld)
             if shortest_path:
                 self.entering_new_subworld = False
-                print 'no path. go to bot bound'
                 return shortest_path
             subworld.bot_bound.pop(len(subworld.bot_bound) / 2)
         return []
