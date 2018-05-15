@@ -900,7 +900,227 @@ class TestEnemy(unittest.TestCase):
                          enemy.entering_new_subworld)
         self.assertEqual(new_last_shortest_path, (enemy.shortest_path[-1].row,
                                                   enemy.shortest_path[-1].col))
-   
+
+    def test_enemy_in_bound_food_not_in_dir_other_bounds_empty(self):
+        '''
+        Enemy is about to enter the top bound and food is not in that
+        direction, but the other bounds are empty.
+        Verify that the enemy still goes in that direction:
+        Verify that the former
+            (subworld.top_bound[len(subworld.top_bound) / 2][0],
+             subworld.top_bound[len(subworld.top_bound) / 2][1]) is not in
+            subworld.top_bound anymore and
+            enemy.entering_new_subworld == True.
+        Map:
+        wwwwwwwwwwwwwwwwwwww
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000e00000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w0000000000000f0000w
+        w000000000000000000w
+        w000000000000000000w
+        wwwwwwwwwwwwwwwwwwww
+        '''
+        food_row = 16
+        food_col = 14
+        world = World(food_row, food_col)
+        enemy = Enemy(world)
+        # enemy start at (6, 7) before entering top bound (5, 7) in SW5
+        subworld = world.get_current_subworld(6, 7)
+        former_top_bound = subworld.top_bound[len(subworld.top_bound) / 2]
+        enemy.position = (StationaryTile.DIMS[1] * 6,
+                          StationaryTile.DIMS[0] * 7)
+        enemy.shortest_path = []
+        subworld.bot_bound = []
+        subworld.left_bound = []
+        subworld.right_bound = []
+
+        new_entering_new_subworld = True
+        new_last_shortest_path = [(Enemy.TilePath(4, 7,
+                                                 Enemy.TilePath(5, 7, None)))]
+
+        enemy.do_something()
+        # keep on moving until enemy reaches former_top_bound
+        while enemy.position[0] != \
+                (former_top_bound[1] * StationaryTile.DIMS[0]) or \
+                enemy.position[1] != \
+                (former_top_bound[0] * StationaryTile.DIMS[1]):
+            enemy.do_something()
+        # pop the shortest path to (5, 7).  shortest_path is now empty.
+        enemy.do_something()
+        # enter the new subworld
+        enemy.do_something()
+
+        self.assertNotIn(former_top_bound, subworld.top_bound)
+        self.assertEqual(new_entering_new_subworld,
+                         enemy.entering_new_subworld)
+        self.assertEqual(len(new_last_shortest_path), len(enemy.shortest_path))
+        for i in range(len(new_last_shortest_path)):
+            self.assertEqual(new_last_shortest_path[i].row,
+                             enemy.shortest_path[i].row)
+            self.assertEqual(new_last_shortest_path[i].col,
+                             enemy.shortest_path[i].col)
+            self.assertEqual(new_last_shortest_path[i].parent.row,
+                             enemy.shortest_path[i].parent.row)
+            self.assertEqual(new_last_shortest_path[i].parent.col,
+                             enemy.shortest_path[i].parent.col)
+            # parents should be None
+            self.assertEqual(new_last_shortest_path[i].parent.parent,
+                             enemy.shortest_path[i].parent.parent)
+
+    def test_enemy_in_bound_other_bounds_empty_food_not_in_dir_bound_blocked(self):
+        '''
+        Enemy is about to enter the bot bound, but the bound is blocked, the
+        food is not in that direction, and other bounds are empty.
+        Verify that the enemy chooses the next bot bound:
+        (subworld.bot_bound[len(subworld.bot_bound) / 2][0],
+            subworld.bot_bound[len(subworld.bot_bound) / 2][1]) is not in
+        subworld.bot_bound anymore and then the next
+        (subworld.bot_bound[len(subworld.bot_bound) / 2][0],
+            subworld.bot_bound[len(subworld.bot_bound) / 2][1]) becomes the new
+        destination.
+        enemy.entering_new_subworld == False.
+        Map:
+        wwwwwwwwwwwwwwwwwwww
+        wf00000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000e00000000000w
+        w000000000000000000w
+        w000000w00000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        wwwwwwwwwwwwwwwwwwww
+        '''
+        food_row = 1
+        food_col = 1
+        world = World(food_row, food_col)
+        world.grid[10][7] = Wall(10, 7)
+        enemy = Enemy(world)
+        # enemy start at (8, 7) before entering bot bound (9, 7) in SW5
+        subworld = world.get_current_subworld(8, 7)
+        former_bot_bound = subworld.left_bound[len(subworld.bot_bound) / 2]
+        enemy.position = (StationaryTile.DIMS[1] * 8,
+                          StationaryTile.DIMS[0] * 7)
+        enemy.shortest_path = []
+        subworld.left_bound = []
+        subworld.top_bound = []
+        subworld.right_bound = []
+
+        new_entering_new_subworld = False
+
+        enemy.do_something()
+        # keep on moving until enemy reaches former_bot_bound
+        while enemy.position[0] != \
+                (former_bot_bound[1] * StationaryTile.DIMS[0]) or \
+                enemy.position[1] != \
+                (former_bot_bound[0] * StationaryTile.DIMS[1]):
+            enemy.do_something()
+        # pop the shortest path to (9, 7).  shortest_path is now empty.
+        enemy.do_something()
+        # entrance to bot subworld is blocked by a Wall at (10, 7).  The last
+        # shortest path destination is the next bot bound.
+        enemy.do_something()
+        new_last_shortest_path = \
+            (subworld.bot_bound[len(subworld.bot_bound) / 2][0],
+             subworld.bot_bound[len(subworld.bot_bound) / 2][1])
+
+        self.assertNotIn(former_bot_bound, subworld.bot_bound)
+        self.assertEqual(new_entering_new_subworld,
+                         enemy.entering_new_subworld)
+        self.assertEqual(new_last_shortest_path, (enemy.shortest_path[-1].row,
+                                                  enemy.shortest_path[-1].col))
+
+    def test_no_path(self):
+        # TODO: 
+        '''
+        Enemy is about to enter the right bound, the bound is blocked, all
+        other bounds are empty, and there are no more tiles available in the
+        right bound.
+        Verify that shortest_path == [].
+        Map:
+        wwwwwwwwwwwwwwwwwwww
+        wf00000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000e00000000000w
+        w000000000000000000w
+        w000000w00000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        wwwwwwwwwwwwwwwwwwww
+        '''
+        food_row = 1
+        food_col = 1
+        world = World(food_row, food_col)
+        world.grid[10][7] = Wall(10, 7)
+        enemy = Enemy(world)
+        # enemy start at (8, 7) before entering bot bound (9, 7) in SW5
+        subworld = world.get_current_subworld(8, 7)
+        former_bot_bound = subworld.left_bound[len(subworld.bot_bound) / 2]
+        enemy.position = (StationaryTile.DIMS[1] * 8,
+                          StationaryTile.DIMS[0] * 7)
+        enemy.shortest_path = []
+        subworld.left_bound = []
+        subworld.top_bound = []
+        subworld.right_bound = []
+
+        new_entering_new_subworld = False
+
+        enemy.do_something()
+        # keep on moving until enemy reaches former_bot_bound
+        while enemy.position[0] != \
+                (former_bot_bound[1] * StationaryTile.DIMS[0]) or \
+                enemy.position[1] != \
+                (former_bot_bound[0] * StationaryTile.DIMS[1]):
+            enemy.do_something()
+        # pop the shortest path to (9, 7).  shortest_path is now empty.
+        enemy.do_something()
+        # entrance to bot subworld is blocked by a Wall at (10, 7).  The last
+        # shortest path destination is the next bot bound.
+        enemy.do_something()
+        new_last_shortest_path = \
+            (subworld.bot_bound[len(subworld.bot_bound) / 2][0],
+             subworld.bot_bound[len(subworld.bot_bound) / 2][1])
+
+        self.assertNotIn(former_bot_bound, subworld.bot_bound)
+        self.assertEqual(new_entering_new_subworld,
+                         enemy.entering_new_subworld)
+        self.assertEqual(new_last_shortest_path, (enemy.shortest_path[-1].row,
+                                                  enemy.shortest_path[-1].col))
+        
 
 if __name__ == '__main__':
     unittest.main()
