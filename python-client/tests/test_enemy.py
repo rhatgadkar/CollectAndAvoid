@@ -577,7 +577,7 @@ class TestEnemy(unittest.TestCase):
         w000000000000000000w
         w000000000000000000w
         w000000000000000000w
-        w000000f00e00000000w
+        w0000000f00e0000000w
         w000000000000000000w
         w000000000000000000w
         w000000000000000000w
@@ -587,7 +587,7 @@ class TestEnemy(unittest.TestCase):
         wwwwwwwwwwwwwwwwwwww
         '''
         food_row = 12
-        food_col = 7
+        food_col = 8
         world = World(food_row, food_col)
         enemy = Enemy(world)
         # enemy start at (12, 11) before entering left bound (12, 10) in SW10
@@ -831,6 +831,75 @@ class TestEnemy(unittest.TestCase):
             self.assertEqual(new_last_shortest_path[i].parent.parent,
                              enemy.shortest_path[i].parent.parent)
 
+    def test_in_bound_enter_alternate_bound(self):
+        '''
+        Enemy is going to a left bound and food is in the bottom-left
+        direction, but bound is blocked.
+        Verify that the former
+        (subworld.left_bound[len(subworld.left_bound) / 2][0],
+            subworld.left_bound[len(subworld.left_bound) / 2][1]) is not in
+        subworld.left_bound anymore and then the next
+        (subworld.left_bound[len(subworld.left_bound) / 2][0],
+            subworld.left_bound[len(subworld.left_bound) / 2][1]) becomes the new
+        destination.
+        enemy.entering_new_subworld == False.
+        Map:
+        wwwwwwwwwwwwwwwwwwww
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000w0e000000000000w
+        w00f000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        w000000000000000000w
+        wwwwwwwwwwwwwwwwwwww
+        '''
+        food_row = 13
+        food_col = 3
+        world = World(food_row, food_col)
+        world.grid[12][4] = Wall(12, 4)
+        enemy = Enemy(world)
+        # enemy start at (12, 6) before entering left bound (12, 5) in SW9
+        subworld = world.get_current_subworld(12, 6)
+        former_left_bound = subworld.left_bound[len(subworld.left_bound) / 2]
+        enemy.position = (StationaryTile.DIMS[1] * 6,
+                          StationaryTile.DIMS[0] * 12)
+        enemy.shortest_path = []
+
+        new_entering_new_subworld = False
+
+        enemy.do_something()
+        # keep on moving until enemy reaches former_left_bound
+        while enemy.position[0] != \
+                (former_left_bound[1] * StationaryTile.DIMS[0]) or \
+                enemy.position[1] != \
+                (former_left_bound[0] * StationaryTile.DIMS[1]):
+            enemy.do_something()
+        # pop the shortest path to (12, 5).  shortest_path is now empty.
+        enemy.do_something()
+        # entrance to left subworld is blocked by a Wall at (12, 4).  The last
+        # shortest path destination is the next left bound.
+        enemy.do_something()
+        new_last_shortest_path = \
+            (subworld.left_bound[len(subworld.left_bound) / 2][0],
+             subworld.left_bound[len(subworld.left_bound) / 2][1])
+
+        self.assertNotIn(former_left_bound, subworld.left_bound)
+        self.assertEqual(new_entering_new_subworld,
+                         enemy.entering_new_subworld)
+        self.assertEqual(new_last_shortest_path, (enemy.shortest_path[-1].row,
+                                                  enemy.shortest_path[-1].col))
    
 
 if __name__ == '__main__':
