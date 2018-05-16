@@ -1021,7 +1021,7 @@ class TestEnemy(unittest.TestCase):
         enemy = Enemy(world)
         # enemy start at (8, 7) before entering bot bound (9, 7) in SW5
         subworld = world.get_current_subworld(8, 7)
-        former_bot_bound = subworld.left_bound[len(subworld.bot_bound) / 2]
+        former_bot_bound = subworld.bot_bound[len(subworld.bot_bound) / 2]
         enemy.position = (StationaryTile.DIMS[1] * 8,
                           StationaryTile.DIMS[0] * 7)
         enemy.shortest_path = []
@@ -1069,8 +1069,8 @@ class TestEnemy(unittest.TestCase):
         w000000000000000000w
         w000000000000000000w
         w000000000000000000w
-        w000000e00000000000w
         w000000000000000000w
+        w0000000e0w00000000w
         w000000w00000000000w
         w000000000000000000w
         w000000000000000000w
@@ -1085,41 +1085,41 @@ class TestEnemy(unittest.TestCase):
         food_row = 1
         food_col = 1
         world = World(food_row, food_col)
-        world.grid[10][7] = Wall(10, 7)
+        world.grid[9][10] = Wall(9, 10)
         enemy = Enemy(world)
-        # enemy start at (8, 7) before entering bot bound (9, 7) in SW5
-        subworld = world.get_current_subworld(8, 7)
-        former_bot_bound = subworld.left_bound[len(subworld.bot_bound) / 2]
+        # enemy start at (9, 8) before entering right bound (9, 9) in SW5
+        subworld = world.get_current_subworld(9, 8)
         enemy.position = (StationaryTile.DIMS[1] * 8,
                           StationaryTile.DIMS[0] * 7)
         enemy.shortest_path = []
         subworld.left_bound = []
         subworld.top_bound = []
-        subworld.right_bound = []
+        subworld.bot_bound = []
+        while len(subworld.right_bound) > 1:
+            subworld.right_bound.pop(0)
+        former_right_bound = subworld.right_bound[len(subworld.right_bound) / 2]
 
         new_entering_new_subworld = False
 
         enemy.do_something()
-        # keep on moving until enemy reaches former_bot_bound
+        # keep on moving until enemy reaches former_right_bound
         while enemy.position[0] != \
-                (former_bot_bound[1] * StationaryTile.DIMS[0]) or \
+                (former_right_bound[1] * StationaryTile.DIMS[0]) or \
                 enemy.position[1] != \
-                (former_bot_bound[0] * StationaryTile.DIMS[1]):
+                (former_right_bound[0] * StationaryTile.DIMS[1]):
             enemy.do_something()
-        # pop the shortest path to (9, 7).  shortest_path is now empty.
+        # pop the shortest path to (9, 9).  shortest_path is now empty.
         enemy.do_something()
-        # entrance to bot subworld is blocked by a Wall at (10, 7).  The last
-        # shortest path destination is the next bot bound.
+        # entrance to right subworld is blocked by a Wall at (9, 10).
+        # subworld.right_bound is now empty and shortest_path == [].
         enemy.do_something()
-        new_last_shortest_path = \
-            (subworld.bot_bound[len(subworld.bot_bound) / 2][0],
-             subworld.bot_bound[len(subworld.bot_bound) / 2][1])
+        new_last_shortest_path = []
+        new_right_subworld = []
 
-        self.assertNotIn(former_bot_bound, subworld.bot_bound)
+        self.assertNotIn(new_right_subworld, subworld.right_bound)
         self.assertEqual(new_entering_new_subworld,
                          enemy.entering_new_subworld)
-        self.assertEqual(new_last_shortest_path, (enemy.shortest_path[-1].row,
-                                                  enemy.shortest_path[-1].col))
+        self.assertEqual(new_last_shortest_path, enemy.shortest_path)
         
 
 if __name__ == '__main__':
