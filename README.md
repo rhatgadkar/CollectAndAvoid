@@ -11,6 +11,7 @@ using the arrow keys.  Each time the player collects a light blue square, the
 player's score increments.  The dark blue square is an AI opponent that also
 tries to collect light blue squares.  If the player touches a red square or the
 AI opponent, the game is over.  The image below shows the game.
+
 ![collectandavoid-gameplay-github](https://user-images.githubusercontent.com/8902454/46189708-c6c4a000-c2a4-11e8-928b-c66e98bb8a28.png)
 
 AI opponent's pathfinding algorithm
@@ -25,6 +26,7 @@ of a subworld contains five yellow squares.  Within a subworld, some yellow
 squares of a boundary overlap with yellow squares of another boundary.  In the
 pathfinding algorithm, the AI tries to move in a direction toward the subworld
 that contains the light blue square.
+
 ![collectandavoid-pathfinding-github](https://user-images.githubusercontent.com/8902454/46189709-c9bf9080-c2a4-11e8-8344-483e46b08c88.png)
 
 Here is an example of a scenario (some details are omitted):
